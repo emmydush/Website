@@ -1,0 +1,436 @@
+/* Responsive Design for All Pages */
+
+/* ============ GLOBAL RESPONSIVE IMPROVEMENTS ============ */
+.container {
+    display: flex;
+    width: 100%;
+    margin-top: 60px;
+    min-height: calc(100vh - 60px);
+}
+
+/* Ensure main content takes full width on mobile */
+@media (max-width: 767px) {
+    .container {
+        flex-direction: column;
+        margin-top: 50px;
+        min-height: calc(100vh - 50px);
+    }
+}
+
+/* ============ MOBILE FIRST - Extra Small Screens (< 576px) ============ */
+@media (max-width: 575px) {
+    /* Navigation */
+    .top-nav {
+        padding: 0 10px;
+        height: 50px;
+        flex-wrap: wrap;
+    }
+    
+    .nav-left .logo {
+        font-size: 16px;
+    }
+    
+    .nav-right {
+        gap: 8px;
+        font-size: 12px;
+    }
+    
+    .date-time {
+        display: none;
+    }
+    
+    .language-selector, 
+    .branch-selector,
+    .notifications {
+        display: none;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+        width: 60px !important;
+        left: 0;
+        top: 50px;
+        height: calc(100vh - 50px);
+        overflow-y: auto;
+    }
+    
+    .user-profile .user-info,
+    .menu-item span,
+    .sidebar-menu {
+        display: none;
+    }
+    
+    .sidebar.mobile-active {
+        width: 200px;
+    }
+    
+    .sidebar.mobile-active .user-profile .user-info,
+    .sidebar.mobile-active .menu-item span {
+        display: block;
+    }
+    
+    .profile-image {
+        width: 35px;
+        height: 35px;
+        margin-bottom: 0;
+    }
+    
+    .menu-item {
+        justify-content: center;
+        padding: 12px;
+        font-size: 12px;
+    }
+    
+    .menu-item i {
+        margin-right: 0;
+        font-size: 18px;
+    }
+    
+    /* Main Content */
+    .container {
+        margin-top: 50px;
+        flex-direction: column;
+    }
+    
+    .main-content {
+        margin-left: 60px !important;
+        padding: 15px 10px;
+        margin-top: 0;
+    }
+    
+    /* Typography */
+    h1 {
+        font-size: 20px !important;
+    }
+    
+    h2 {
+        font-size: 18px !important;
+    }
+    
+    h3 {
+        font-size: 16px !important;
+    }
+    
+    /* Forms and Inputs */
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        font-size: 12px !important;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 10px 12px !important;
+        font-size: 14px !important;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr !important;
+        gap: 15px !important;
+    }
+    
+    /* Grids and Tables */
+    .stats-cards,
+    .categories-grid,
+    .pos-container,
+    .settings-grid {
+        grid-template-columns: 1fr !important;
+        gap: 15px !important;
+    }
+    
+    .products-table,
+    .units-table,
+    .customers-table,
+    .sales-table,
+    .credit-table {
+        width: 100%;
+        font-size: 12px !important;
+    }
+    
+    .products-table th,
+    .products-table td,
+    .units-table th,
+    .units-table td,
+    .customers-table th,
+    .customers-table td,
+    .sales-table th,
+    .sales-table td,
+    .credit-table th,
+    .credit-table td {
+        padding: 8px 5px !important;
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .btn-edit, 
+    .btn-delete {
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+    }
+    
+    /* Modal */
+    .modal-content {
+        width: 95% !important;
+        max-width: 100% !important;
+        padding: 15px !important;
+        max-height: 90vh;
+    }
+    
+    .modal-header h2 {
+        font-size: 18px !important;
+    }
+    
+    /* Cards */
+    .card,
+    .category-card,
+    .report-card,
+    .pos-section {
+        padding: 15px !important;
+    }
+    
+    /* Search Bar */
+    .search-bar {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .search-bar input {
+        width: 100%;
+    }
+    
+    .search-bar button {
+        width: 100%;
+    }
+    
+    /* POS Layout */
+    .pos-container {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .product-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* Forms */
+    .form-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .form-actions button {
+        width: 100%;
+    }
+}
+
+/* ============ SMALL Screens (576px - 767px) ============ */
+@media (min-width: 576px) and (max-width: 767px) {
+    .sidebar {
+        width: 70px;
+    }
+    
+    .main-content {
+        margin-left: 70px !important;
+        padding: 25px 15px;
+    }
+    
+    .stats-cards,
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        width: 90%;
+        max-width: 100%;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .pos-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============ MEDIUM Screens (768px - 1023px) ============ */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .sidebar {
+        width: 100px;
+    }
+    
+    .menu-item span {
+        font-size: 12px;
+    }
+    
+    .main-content {
+        margin-left: 100px !important;
+        padding: 25px 20px;
+    }
+    
+    .stats-cards,
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .form-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .pos-container {
+        grid-template-columns: 1.2fr 1fr;
+    }
+    
+    .settings-grid {
+        grid-template-columns: 200px 1fr;
+    }
+}
+
+/* ============ LARGE Screens (1024px - 1439px) ============ */
+@media (min-width: 1024px) and (max-width: 1439px) {
+    .sidebar {
+        width: 250px;
+    }
+    
+    .main-content {
+        margin-left: 250px !important;
+        padding: 30px 25px;
+    }
+    
+    .stats-cards {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .categories-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .form-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .product-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ============ EXTRA LARGE Screens (1440px+) ============ */
+@media (min-width: 1440px) {
+    .sidebar {
+        width: 280px;
+    }
+    
+    .main-content {
+        margin-left: 280px !important;
+        padding: 30px 30px;
+    }
+    
+    .stats-cards {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+    
+    .categories-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+    
+    .form-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .product-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+/* ============ SCROLLABLE TABLES - Mobile Horizontal Scroll ============ */
+@media (max-width: 768px) {
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        min-width: 600px;
+    }
+}
+
+/* ============ HIDE/SHOW UTILITY ============ */
+@media (max-width: 768px) {
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
+@media (min-width: 769px) {
+    .show-mobile {
+        display: none !important;
+    }
+}
+
+/* ============ TOUCH FRIENDLY BUTTONS ============ */
+@media (max-width: 768px) {
+    button, a {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .btn-primary,
+    .btn-edit,
+    .btn-delete,
+    .btn-cancel {
+        min-height: 40px;
+    }
+}
+
+/* ============ FIX FOR SIDEBAR WITH MOBILE TOGGLE ============ */
+@media (max-width: 767px) {
+    #mobileMenuToggle {
+        display: block !important;
+    }
+
+    .sidebar {
+        position: fixed;
+        left: -250px;
+        top: 60px;
+        width: 250px;
+        height: calc(100vh - 60px);
+        transition: left 0.3s ease;
+        z-index: 999;
+        background: #2c3e50;
+        padding: 20px 0;
+    }
+
+    .sidebar.active {
+        left: 0;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .sidebar.active .user-profile .user-info,
+    .sidebar.active .menu-item span {
+        display: block;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+    }
+}
+
+@media (min-width: 768px) {
+    #mobileMenuToggle {
+        display: none !important;
+    }
+}
