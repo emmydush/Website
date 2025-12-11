@@ -81,6 +81,7 @@ try {
     <title>Modern Inventory Management Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/modern_dashboard.css">
+    <link rel="stylesheet" href="css/toast.css">
 </head>
 <body>
     <!-- Top Navigation Bar -->
@@ -128,11 +129,30 @@ try {
         <!-- Left Sidebar -->
         <aside class="sidebar">
             <div class="user-profile">
-                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($userName ?? 'User'); ?>&background=0D8ABC&color=fff&size=64" alt="User" class="profile-image">
+                <?php
+                $avatarBase = ($_SESSION['user_id'] ?? 'guest');
+                $avatarPathJ = 'uploads/avatars/' . $avatarBase . '.jpg';
+                $avatarPathP = 'uploads/avatars/' . $avatarBase . '.png';
+                $avatarPathW = 'uploads/avatars/' . $avatarBase . '.webp';
+                if (file_exists(__DIR__ . '/' . $avatarPathJ)) {
+                    $avatarUrl = $avatarPathJ;
+                } elseif (file_exists(__DIR__ . '/' . $avatarPathP)) {
+                    $avatarUrl = $avatarPathP;
+                } elseif (file_exists(__DIR__ . '/' . $avatarPathW)) {
+                    $avatarUrl = $avatarPathW;
+                } else {
+                    $avatarUrl = 'https://ui-avatars.com/api/?name=' . urlencode($userName ?? 'User') . '&background=0D8ABC&color=fff&size=64';
+                }
+                ?>
+                <img src="<?php echo $avatarUrl; ?>" alt="User" class="profile-image" id="profileImage">
                 <div class="user-info">
                     <h3 class="user-name"><?php echo htmlspecialchars($userName ?? 'User'); ?></h3>
                     <p class="user-role"><?php echo htmlspecialchars($userRole ?? 'Staff'); ?></p>
                 </div>
+                <form id="avatarForm" style="margin-top:8px;" enctype="multipart/form-data">
+                    <input type="file" id="avatarInput" name="avatar" accept="image/*" style="display:none;">
+                    <button type="button" class="btn btn-sm" id="uploadAvatarBtn" title="Upload profile picture"><i class="fas fa-camera"></i></button>
+                </form>
             </div>
             
             <nav class="sidebar-menu">
@@ -274,6 +294,8 @@ try {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/avatar.js"></script>
+    <script src="js/toast.js"></script>
     <script src="js/modern_dashboard.js"></script>
 </body>
 </html>

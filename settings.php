@@ -237,18 +237,52 @@ try {
             <div class="logo">InventoryPro</div>
         </div>
         <div class="nav-right">
-            <div class="user-menu" id="userMenu">
-                <i class="fas fa-user-circle"></i>
-                <span><?php echo htmlspecialchars($userName); ?></span>
+            <div class="date-time" id="currentDateTime"></div>
+            <div class="language-selector">
+                <select>
+                    <option>English</option>
+                    <option>Spanish</option>
+                    <option>French</option>
+                </select>
             </div>
+            <div class="notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </div>
+            <div class="branch-selector">
+                <select>
+                    <option>Main Branch</option>
+                    <option>Branch 1</option>
+                    <option>Branch 2</option>
+                </select>
+            </div>
+            <div class="user-menu" id="userMenu">
+                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($userName ?? 'User'); ?>&background=0D8ABC&color=fff" alt="User" class="user-avatar">
+                <span class="user-name"><?php echo htmlspecialchars($userName ?? 'User'); ?></span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            
+            <!-- Dropdown menu for user actions -->
             <div class="user-dropdown" id="userDropdown">
+                <a href="#"><i class="fas fa-user"></i> Profile</a>
+                <a href="#"><i class="fas fa-cog"></i> Settings</a>
                 <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>
     </nav>
 
-    <div class="container-layout">
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Left Sidebar -->
         <aside class="sidebar">
+            <div class="user-profile">
+                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($userName ?? 'User'); ?>&background=0D8ABC&color=fff&size=64" alt="User" class="profile-image">
+                <div class="user-info">
+                    <h3 class="user-name"><?php echo htmlspecialchars($userName ?? 'User'); ?></h3>
+                    <p class="user-role"><?php echo htmlspecialchars($userRole ?? 'Staff'); ?></p>
+                </div>
+            </div>
+            
             <nav class="sidebar-menu">
                 <a href="modern_dashboard.php" class="menu-item">
                     <i class="fas fa-home"></i>
@@ -259,32 +293,46 @@ try {
                     <span>Products</span>
                 </a>
                 <a href="categories.php" class="menu-item">
-                    <i class="fas fa-list"></i>
+                    <i class="fas fa-tags"></i>
                     <span>Categories</span>
                 </a>
                 <a href="units.php" class="menu-item">
                     <i class="fas fa-ruler"></i>
                     <span>Units</span>
                 </a>
-                <a href="customers.php" class="menu-item">
-                    <i class="fas fa-users"></i>
-                    <span>Customers</span>
-                </a>
                 <a href="sales.php" class="menu-item">
                     <i class="fas fa-shopping-cart"></i>
                     <span>Sales</span>
+                </a>
+                <a href="pos_system.php" class="menu-item">
+                    <i class="fas fa-cash-register"></i>
+                    <span>Point of Sale</span>
                 </a>
                 <a href="credit_sales.php" class="menu-item">
                     <i class="fas fa-credit-card"></i>
                     <span>Credit Sales</span>
                 </a>
-                <a href="pos.php" class="menu-item">
-                    <i class="fas fa-cash-register"></i>
-                    <span>Point of Sale</span>
+                <a href="customers.php" class="menu-item">
+                    <i class="fas fa-users"></i>
+                    <span>Customers</span>
                 </a>
                 <a href="reports.php" class="menu-item">
                     <i class="fas fa-chart-bar"></i>
                     <span>Reports</span>
+                </a>
+                <a href="settings.php" class="menu-item active">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="logout.php" class="menu-item logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">                    <span>Reports</span>
                 </a>
                 <a href="settings.php" class="menu-item active">
                     <i class="fas fa-cog"></i>

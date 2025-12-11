@@ -50,6 +50,7 @@ try {
     <title>Products - Inventory Management System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/modern_dashboard.css">
+    <link rel="stylesheet" href="css/toast.css">
     <style>
         .products-header {
             display: flex;
@@ -486,7 +487,7 @@ try {
                     <i class="fas fa-shopping-cart"></i>
                     <span>Sales</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="pos_system.php" class="menu-item">
                     <i class="fas fa-cash-register"></i>
                     <span>Point of Sale</span>
                 </a>
@@ -1004,28 +1005,31 @@ try {
 
         // Delete product
         function deleteProduct(productId) {
-            if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+            // Confirm deletion
+            showConfirm('Are you sure you want to delete this product? This action cannot be undone.', () => {
                 fetch('php/delete_product.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: new URLSearchParams({id: productId})
+                    body: new URLSearchParams({
+                        id: productId
+                    })
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        alert(data.message);
-                        loadProducts(); // Reload products
+                        showSuccess('Product deleted successfully!');
+                        loadProducts(); // Reload the products table
                     } else {
-                        alert('Error: ' + data.message);
+                        showError('Error deleting product: ' + data.message);
                     }
                 })
                 .catch(error => {
-                    console.error('Error deleting product:', error);
-                    alert('An error occurred while deleting the product');
+                    console.error('Error:', error);
+                    showError('An error occurred while deleting the product');
                 });
-            }
+            });
         }
 
         // Start camera-based barcode scanning
@@ -1147,6 +1151,51 @@ try {
                     closeScanner();
                 }, 1500);
             });
+        }
+
+        // Display products in product cards
+        function displayProductsInCards(products, searchTerm = '') {
+            // Filter products based on search term
+            if (searchTerm) {
+                products = products.filter(product => 
+                    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    product.barcode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    product.category_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    product.supplier_name?.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+
+            // Clear container
+            productsContainer.innerHTML = '';
+
+            // Show message if no products found
+            if (products.length === 0) {
+                productsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px;">
+                        No products found. ${searchTerm ? 'Try a different search term.' : 'Add a new product to get started.'}
+                    </div>
+                `;
+                return;
+            }
+
+            // Add products to container
+            let html = '';
+            products.forEach(product => {
+                html += `
+                <div class="product-card">
+                    <div class="product-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="product-name">${product.name}</div>
+                    <div class="product-price">FRW ${parseFloat(product.price).toLocaleString()}</div>
+                    <div class="product-quantity">${parseFloat(product.quantity).toFixed(2)} ${product.unit_name || 'PCS'} left</div>
+                    ${product.has_variants ? '<div class="variant-badge">Has Variants</div>' : ''}
+                    <button class="add-btn" onclick="addToCart(${product.id}, '${product.name}', ${product.price})">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>`;
+            });
+            productsContainer.innerHTML = html;
         }
 
     </script>

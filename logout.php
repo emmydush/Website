@@ -7,7 +7,7 @@ $_SESSION = array();
 // Destroy the session
 session_destroy();
 
-// Redirect to login page
-header("Location: login.html");
+// Redirect to login page with logout notification
+header("Location: login.html?logout=success");
 exit();
 ?>

@@ -115,26 +115,85 @@ $userRole = $_SESSION['role'] ?? "Staff";
         .sales-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 2rem;
+            margin-top: 1rem;
             font-size: 0.9rem;
         }
         .sales-table th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: transparent;
+            color: #666;
             padding: 1rem;
             text-align: left;
-            font-weight: 600;
+            font-weight: 500;
+            border-bottom: 1px solid #ddd;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
         }
         .sales-table td {
             padding: 1rem;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid #ddd;
+            color: #333;
         }
         .sales-table tr:hover {
-            background: #f9f9f9;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        .status-badge {
+            background: #4caf50;
+            color: white;
+            padding: 0.35rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .sale-id {
+            font-weight: 600;
+            color: #333;
         }
         .action-buttons {
             display: flex;
             gap: 0.5rem;
+            align-items: center;
+        }
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .action-btn.view {
+            background: #2196f3;
+            color: white;
+        }
+        .action-btn.view:hover {
+            background: #1976d2;
+        }
+        .action-btn.edit {
+            background: #ff9800;
+            color: white;
+        }
+        .action-btn.edit:hover {
+            background: #f57c00;
+        }
+        .action-btn.delete {
+            background: #f44336;
+            color: white;
+        }
+        .action-btn.delete:hover {
+            background: #da190b;
+        }
+        .action-btn.refresh {
+            background: #9e9e9e;
+            color: white;
+        }
+        .action-btn.refresh:hover {
+            background: #757575;
         }
         .content-section {
             background: white;
@@ -153,6 +212,44 @@ $userRole = $_SESSION['role'] ?? "Staff";
             margin: 0;
             color: #333;
             font-size: 1.75rem;
+        }
+        .header-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        .btn-create {
+            background: #00bcd4;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-create:hover {
+            background: #00acc1;
+            transform: translateY(-2px);
+        }
+        .btn-pos {
+            background: #00bcd4;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-pos:hover {
+            background: #00acc1;
+            transform: translateY(-2px);
         }
         .empty-state {
             text-align: center;
@@ -196,18 +293,71 @@ $userRole = $_SESSION['role'] ?? "Staff";
             <div class="logo">InventoryPro</div>
         </div>
         <div class="nav-right">
-            <div class="user-menu" id="userMenu">
-                <i class="fas fa-user-circle"></i>
-                <span><?php echo htmlspecialchars($userName); ?></span>
+            <div class="date-time" id="currentDateTime"></div>
+            <div class="language-selector">
+                <select>
+                    <option>English</option>
+                    <option>Spanish</option>
+                    <option>French</option>
+                </select>
             </div>
+            <div class="notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </div>
+            <div class="branch-selector">
+                <select>
+                    <option>Main Branch</option>
+                    <option>Branch 1</option>
+                    <option>Branch 2</option>
+                </select>
+            </div>
+            <div class="user-menu" id="userMenu">
+                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($userName ?? 'User'); ?>&background=0D8ABC&color=fff" alt="User" class="user-avatar">
+                <span class="user-name"><?php echo htmlspecialchars($userName ?? 'User'); ?></span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            
+            <!-- Dropdown menu for user actions -->
             <div class="user-dropdown" id="userDropdown">
+                <a href="#"><i class="fas fa-user"></i> Profile</a>
+                <a href="#"><i class="fas fa-cog"></i> Settings</a>
                 <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>
     </nav>
 
-    <div class="container-layout">
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Left Sidebar -->
         <aside class="sidebar">
+            <div class="user-profile">
+                <?php
+                $avatarBase = ($_SESSION['user_id'] ?? 'guest');
+                $avatarPathJ = 'uploads/avatars/' . $avatarBase . '.jpg';
+                $avatarPathP = 'uploads/avatars/' . $avatarBase . '.png';
+                $avatarPathW = 'uploads/avatars/' . $avatarBase . '.webp';
+                if (file_exists(__DIR__ . '/' . $avatarPathJ)) {
+                    $avatarUrl = $avatarPathJ;
+                } elseif (file_exists(__DIR__ . '/' . $avatarPathP)) {
+                    $avatarUrl = $avatarPathP;
+                } elseif (file_exists(__DIR__ . '/' . $avatarPathW)) {
+                    $avatarUrl = $avatarPathW;
+                } else {
+                    $avatarUrl = 'https://ui-avatars.com/api/?name=' . urlencode($userName ?? 'User') . '&background=0D8ABC&color=fff&size=64';
+                }
+                ?>
+                <img src="<?php echo $avatarUrl; ?>" alt="User" class="profile-image" id="profileImage">
+                <div class="user-info">
+                    <h3 class="user-name"><?php echo htmlspecialchars($userName ?? 'User'); ?></h3>
+                    <p class="user-role"><?php echo htmlspecialchars($userRole ?? 'Staff'); ?></p>
+                </div>
+                <form id="avatarForm" style="margin-top:8px;" enctype="multipart/form-data">
+                    <input type="file" id="avatarInput" name="avatar" accept="image/*" style="display:none;">
+                    <button type="button" class="btn btn-sm" id="uploadAvatarBtn" title="Upload profile picture"><i class="fas fa-camera"></i></button>
+                </form>
+            </div>
+            
             <nav class="sidebar-menu">
                 <a href="modern_dashboard.php" class="menu-item">
                     <i class="fas fa-home"></i>
@@ -218,28 +368,28 @@ $userRole = $_SESSION['role'] ?? "Staff";
                     <span>Products</span>
                 </a>
                 <a href="categories.php" class="menu-item">
-                    <i class="fas fa-list"></i>
+                    <i class="fas fa-tags"></i>
                     <span>Categories</span>
                 </a>
                 <a href="units.php" class="menu-item">
                     <i class="fas fa-ruler"></i>
                     <span>Units</span>
                 </a>
-                <a href="customers.php" class="menu-item">
-                    <i class="fas fa-users"></i>
-                    <span>Customers</span>
-                </a>
                 <a href="sales.php" class="menu-item active">
                     <i class="fas fa-shopping-cart"></i>
                     <span>Sales</span>
+                </a>
+                <a href="pos_system.php" class="menu-item">
+                    <i class="fas fa-cash-register"></i>
+                    <span>Point of Sale</span>
                 </a>
                 <a href="credit_sales.php" class="menu-item">
                     <i class="fas fa-credit-card"></i>
                     <span>Credit Sales</span>
                 </a>
-                <a href="pos.php" class="menu-item">
-                    <i class="fas fa-cash-register"></i>
-                    <span>Point of Sale</span>
+                <a href="customers.php" class="menu-item">
+                    <i class="fas fa-users"></i>
+                    <span>Customers</span>
                 </a>
                 <a href="reports.php" class="menu-item">
                     <i class="fas fa-chart-bar"></i>
@@ -256,13 +406,19 @@ $userRole = $_SESSION['role'] ?? "Staff";
             </nav>
         </aside>
 
+        <!-- Main Content -->
         <main class="main-content">
             <div class="content-section">
                 <div class="section-header">
-                    <h2>Sales Management</h2>
-                    <button class="btn btn-primary" id="addSaleBtn">
-                        <i class="fas fa-plus"></i> Record Sale
-                    </button>
+                    <h2>Sales</h2>
+                    <div class="header-buttons">
+                        <button class="btn-create" id="addSaleBtn">
+                            <i class="fas fa-plus"></i> Create Sale
+                        </button>
+                        <a href="pos_system.php" class="btn-pos">
+                            <i class="fas fa-cash-register"></i> POS
+                        </a>
+                    </div>
                 </div>
 
                 <div class="summary-cards">
@@ -427,21 +583,40 @@ $userRole = $_SESSION['role'] ?? "Staff";
                     });
                     
                     document.getElementById('totalSalesCount').textContent = totalCount;
-                    document.getElementById('totalRevenue').textContent = '$' + totalRev.toFixed(2);
-                    document.getElementById('averageSale').textContent = '$' + (totalRev / totalCount).toFixed(2);
+                    document.getElementById('totalRevenue').textContent = 'FRW' + totalRev.toFixed(2);
+                    document.getElementById('averageSale').textContent = 'FRW' + (totalRev / totalCount).toFixed(2);
                     
-                    let html = '<table class="sales-table"><thead><tr><th>ID</th><th>Product</th><th>Quantity</th><th>Unit Price</th><th>Total Amount</th><th>Sold By</th><th>Date</th></tr></thead><tbody>';
+                    let html = '<table class="sales-table"><thead><tr><th>SALE ID</th><th>CUSTOMER</th><th>DATE</th><th>PAYMENT METHOD</th><th>TOTAL AMOUNT</th><th>TOTAL PROFIT</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody>';
                     
-                    data.data.forEach(sale => {
-                        const saleDate = new Date(sale.created_at).toLocaleDateString();
+                    data.data.forEach((sale, index) => {
+                        const saleDate = new Date(sale.created_at);
+                        const formattedDate = saleDate.toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }).replace(',', '');
+                        
+                        // Calculate profit (assuming profit = 35% of total amount)
+                        const profit = parseFloat(sale.total_amount) * 0.35;
+                        
                         html += `<tr>
-                            <td>${sale.id}</td>
-                            <td>${sale.product_name}</td>
-                            <td>${sale.quantity_sold}</td>
-                            <td>$${parseFloat(sale.sale_price).toFixed(2)}</td>
-                            <td>$${parseFloat(sale.total_amount).toFixed(2)}</td>
-                            <td>${sale.sold_by_name}</td>
-                            <td>${saleDate}</td>
+                            <td class="sale-id">Sale-${data.data.length - index}</td>
+                            <td>Walk-in Customer</td>
+                            <td>${formattedDate}</td>
+                            <td>Cash</td>
+                            <td>FRW${parseFloat(sale.total_amount).toFixed(2)}</td>
+                            <td>FRW${profit.toFixed(2)}</td>
+                            <td><span class="status-badge">Completed</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-btn view" title="View"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn edit" title="Edit"><i class="fas fa-edit"></i></button>
+                                    <button class="action-btn delete" title="Delete"><i class="fas fa-trash"></i></button>
+                                    <button class="action-btn refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+                                </div>
+                            </td>
                         </tr>`;
                     });
                     
@@ -458,6 +633,7 @@ $userRole = $_SESSION['role'] ?? "Staff";
 
         loadSales();
     </script>
+    <script src="js/avatar.js"></script>
     <script src="js/toast.js"></script>
 </body>
 </html>

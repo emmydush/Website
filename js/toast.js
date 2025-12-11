@@ -206,11 +206,65 @@ function showWarning(message, options = {}) {
  * @param {function} onCancel - Callback if user cancels
  */
 function showConfirm(message, onConfirm, onCancel) {
-    const confirmed = window.confirm(message);
-    if (confirmed && onConfirm) {
-        onConfirm();
-    } else if (!confirmed && onCancel) {
-        onCancel();
-    }
-    return confirmed;
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    
+    // Create dialog container
+    const dialog = document.createElement('div');
+    dialog.className = 'confirm-dialog';
+    
+    // Create message element
+    const messageEl = document.createElement('div');
+    messageEl.className = 'confirm-message';
+    messageEl.textContent = message;
+    
+    // Create buttons container
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'confirm-buttons';
+    
+    // Create confirm button
+    const confirmBtn = document.createElement('button');
+    confirmBtn.className = 'confirm-btn btn-primary';
+    confirmBtn.textContent = 'Yes';
+    
+    // Create cancel button
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'cancel-btn btn-secondary';
+    cancelBtn.textContent = 'No';
+    
+    // Add elements to dialog
+    buttonsContainer.appendChild(cancelBtn);
+    buttonsContainer.appendChild(confirmBtn);
+    dialog.appendChild(messageEl);
+    dialog.appendChild(buttonsContainer);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+    
+    // Add event listeners
+    confirmBtn.addEventListener('click', () => {
+        document.body.removeChild(overlay);
+        if (onConfirm) onConfirm();
+    });
+    
+    cancelBtn.addEventListener('click', () => {
+        document.body.removeChild(overlay);
+        if (onCancel) onCancel();
+    });
+    
+    // Close on escape key
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            document.body.removeChild(overlay);
+            if (onCancel) onCancel();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    
+    document.addEventListener('keydown', handleEscape);
+    
+    // Focus confirm button
+    confirmBtn.focus();
+    
+    return true;
 }

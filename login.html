@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Inventory Management System</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/toast.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="container" id="container">
@@ -57,111 +59,153 @@
             </div>
         </div>
     </div>
+    <script src="js/toast.js?v=1.0"></script>
     <script>
-        const signUpButton = document.getElementById('signUp');
-        const signInButton = document.getElementById('signIn');
-        const container = document.getElementById('container');
-
-        signUpButton.addEventListener('click', () => {
-            container.classList.add("active");
-            window.location.href = 'register.html';
-        });
-
-        signInButton.addEventListener('click', () => {
-            container.classList.remove("active");
-        });
-        
-        // Handle registration form submission
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('reg_username').value;
-            const email = document.getElementById('reg_email').value;
-            const password = document.getElementById('reg_password').value;
-            const confirmPassword = document.getElementById('reg_confirm_password').value;
-            const role = document.getElementById('reg_role').value;
-            
-            // Simple validation
-            if (password !== confirmPassword) {
-                alert('Passwords do not match!');
-                return;
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for Toast to be loaded
+            if (typeof Toast === 'undefined') {
+                console.error('Toast class not loaded. Please refresh the page.');
             }
             
-            if (password.length < 6) {
-                alert('Password must be at least 6 characters long!');
-                return;
+            // Initialize Toast notification system
+            const toast = new Toast({ duration: 4000 });
+            
+            // Check for logout success message
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('logout') === 'success') {
+                toast.show('You have been logged out successfully!', 'success', {
+                    title: 'Logout Successful'
+                });
+                // Remove the query parameter from URL
+                window.history.replaceState({}, document.title, window.location.pathname);
             }
             
-            // Send data to server
-            fetch('php/register.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    username: username,
-                    email: email,
-                    password: password,
-                    role: role
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert(data.message);
-                    // Redirect to login page
-                    window.location.href = 'login.html';
-                } else {
-                    alert(data.message);
+            const signUpButton = document.getElementById('signUp');
+            const signInButton = document.getElementById('signIn');
+            const container = document.getElementById('container');
+
+            signUpButton.addEventListener('click', () => {
+                container.classList.add("active");
+                window.location.href = 'register.html';
+            });
+
+            signInButton.addEventListener('click', () => {
+                container.classList.remove("active");
+            });
+            
+            // Handle registration form submission
+            document.getElementById('registerForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('reg_username').value;
+                const email = document.getElementById('reg_email').value;
+                const password = document.getElementById('reg_password').value;
+                const confirmPassword = document.getElementById('reg_confirm_password').value;
+                const role = document.getElementById('reg_role').value;
+                
+                // Simple validation
+                if (password !== confirmPassword) {
+                    toast.show('Passwords do not match!', 'warning', {
+                        title: 'Validation Error'
+                    });
+                    return;
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred during registration');
+                
+                if (password.length < 6) {
+                    toast.show('Password must be at least 6 characters long!', 'warning', {
+                        title: 'Validation Error'
+                    });
+                    return;
+                }
+                
+                // Send data to server
+                fetch('php/register.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        username: username,
+                        email: email,
+                        password: password,
+                        role: role
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        toast.show('Registration successful! Redirecting to login...', 'success', {
+                            title: 'Account Created'
+                        });
+                        // Redirect to login page after a short delay
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 2000);
+                    } else {
+                        toast.show(data.message, 'error', {
+                            title: 'Registration Failed'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    toast.show('An error occurred during registration', 'error', {
+                        title: 'Connection Error'
+                    });
+                });
+            });
+
+            const loginForm = document.getElementById('loginForm');
+
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('login_username').value;
+                const password = document.getElementById('login_password').value;
+                
+                // Simple validation
+                if (username.trim() === '' || password.trim() === '') {
+                    toast.show('Please fill in all fields!', 'warning', {
+                        title: 'Validation Error'
+                    });
+                    return;
+                }
+                
+                // Send data to server
+                fetch('php/login.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        username: username,
+                        password: password
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        toast.show('Login successful! Redirecting...', 'success', {
+                            title: 'Welcome Back'
+                        });
+                        // Redirect to dashboard after a short delay
+                        setTimeout(() => {
+                            window.location.href = 'modern_dashboard.php';
+                        }, 1500);
+                    } else {
+                        toast.show(data.message, 'error', {
+                            title: 'Login Failed'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    toast.show('An error occurred during login', 'error', {
+                        title: 'Connection Error'
+                    });
+                });
             });
         });
-
-        const loginForm = document.getElementById('loginForm');
-
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('login_username').value;
-            const password = document.getElementById('login_password').value;
-            
-            // Simple validation
-            if (username.trim() === '' || password.trim() === '') {
-                alert('Please fill in all fields!');
-                return;
-            }
-            
-            // Send data to server
-            fetch('php/login.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    username: username,
-                    password: password
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert(data.message);
-                    // Redirect to dashboard
-                    window.location.href = 'modern_dashboard.php';
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred during login');
-            });
-        });
-
     </script>
 </body>
 </html>

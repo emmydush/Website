@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update every minute
     setInterval(updateDateTime, 60000);
     
+    // Initialize Toast notification system
+    const toast = new Toast({ duration: 4000 });
+    
     // User menu dropdown functionality
     const userMenu = document.getElementById('userMenu');
     const userDropdown = document.getElementById('userDropdown');
@@ -39,9 +42,43 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Sidebar menu item click handler
     const menuItems = document.querySelectorAll('.menu-item');
-    menuItems.forEach(item => {
+    menuItems.forEach((item, index) => {
+        item.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(8px) scale(1.02)';
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            if (!this.classList.contains('active')) {
+                this.style.transform = 'translateX(0) scale(1)';
+            }
+        });
+        
         item.addEventListener('click', function(e) {
             e.preventDefault();
+
+            // Get the menu item text
+            const menuItemText = this.querySelector('span').textContent;
+
+            // Handle logout separately
+            if (this.classList.contains('logout')) {
+                showConfirm('Are you sure you want to logout?', () => {
+                    toast.show('Logging out...', 'info', {
+                        title: 'See you soon!'
+                    });
+                    setTimeout(() => {
+                        window.location.href = 'logout.php';
+                    }, 1000);
+                });
+                return; // Stop further processing
+            }
+
+            // Add ripple effect
+            const ripple = document.createElement('span');
+            ripple.style.position = 'absolute';
+            ripple.style.pointerEvents = 'none';
+            ripple.className = 'ripple';
+            this.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
 
             // Remove active class from all items
             menuItems.forEach(i => i.classList.remove('active'));
@@ -49,33 +86,23 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add active class to clicked item
             this.classList.add('active');
 
-            // Get the menu item text
-            const menuItemText = this.querySelector('span').textContent;
+            // Navigation mapping
+            const navigationMap = {
+                'Home': 'modern_dashboard.php',
+                'Products': 'products.php',
+                'Categories': 'categories.php',
+                'Units': 'units.php',
+                'Sales': 'sales.php',
+                'Point of Sale': 'pos.php',
+                'Credit Sales': 'credit_sales.php',
+                'Customers': 'customers.php',
+                'Reports': 'reports.php',
+                'Settings': 'settings.php'
+            };
 
-            // Handle logout separately
-            if (this.classList.contains('logout')) {
-                if (confirm('Are you sure you want to logout?')) {
-                    window.location.href = 'logout.php';
-                }
-            } else {
-                // Navigation mapping
-                const navigationMap = {
-                    'Home': 'modern_dashboard.php',
-                    'Products': 'products.php',
-                    'Categories': 'categories.php',
-                    'Units': 'units.php',
-                    'Sales': 'sales.php',
-                    'Point of Sale': 'pos.php',
-                    'Credit Sales': 'credit_sales.php',
-                    'Customers': 'customers.php',
-                    'Reports': 'reports.php',
-                    'Settings': 'settings.php'
-                };
-
-                const targetPage = navigationMap[menuItemText];
-                if (targetPage) {
-                    window.location.href = targetPage;
-                }
+            const targetPage = navigationMap[menuItemText];
+            if (targetPage) {
+                window.location.href = targetPage;
             }
         });
     });

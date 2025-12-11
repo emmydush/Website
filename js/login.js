@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
     
+    // Initialize Toast notification system
+    const toast = new Toast({ duration: 4000 });
+    
     loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -9,7 +12,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Simple validation
         if (username.trim() === '' || password.trim() === '') {
-            alert('Please fill in all fields!');
+            toast.show('Please fill in all fields!', 'warning', {
+                title: 'Validation Error'
+            });
             return;
         }
         
@@ -27,16 +32,24 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                alert(data.message);
-                // Redirect to dashboard
-                window.location.href = 'dashboard.html';
+                toast.show('Login successful! Redirecting...', 'success', {
+                    title: 'Welcome Back'
+                });
+                // Redirect to dashboard after a short delay
+                setTimeout(() => {
+                    window.location.href = 'modern_dashboard.php';
+                }, 1500);
             } else {
-                alert(data.message);
+                toast.show(data.message, 'error', {
+                    title: 'Login Failed'
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred during login');
+            toast.show('An error occurred during login', 'error', {
+                title: 'Connection Error'
+            });
         });
     });
 });

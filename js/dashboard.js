@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const productId = row.cells[0].textContent;
             
             // Confirm deletion
-            if (confirm(`Are you sure you want to delete product with ID: ${productId}?`)) {
+            showConfirm(`Are you sure you want to delete product with ID: ${productId}?`, () => {
                 // Send delete request to server
                 fetch('php/delete_product.php', {
                     method: 'POST',
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     if (data.status === 'success') {
                         row.remove();
-                        alert('Product deleted successfully!');
+                        showSuccess('Product deleted successfully!');
                         
                         // Add animation effect
                         row.style.transition = 'all 0.3s ease';
@@ -63,21 +63,21 @@ document.addEventListener('DOMContentLoaded', function() {
                             row.remove();
                         }, 300);
                     } else {
-                        alert('Error deleting product: ' + data.message);
+                        showError('Error deleting product: ' + data.message);
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while deleting the product');
+                    showError('An error occurred while deleting the product');
                 });
-            }
+            });
         });
     });
 
     // Logout functionality
     const logoutBtn = document.querySelector('.logout-btn');
     logoutBtn.addEventListener('click', function() {
-        if (confirm('Are you sure you want to logout?')) {
+        showConfirm('Are you sure you want to logout?', () => {
             // Add animation
             document.body.style.transition = 'opacity 0.5s ease';
             document.body.style.opacity = '0';
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 window.location.href = 'login.html';
             }, 500);
-        }
+        });
     });
 
     // Add product button functionality

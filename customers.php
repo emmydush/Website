@@ -192,18 +192,71 @@ $userRole = $_SESSION['role'] ?? "Staff";
             <div class="logo">InventoryPro</div>
         </div>
         <div class="nav-right">
-            <div class="user-menu" id="userMenu">
-                <i class="fas fa-user-circle"></i>
-                <span><?php echo htmlspecialchars($userName); ?></span>
+            <div class="date-time" id="currentDateTime"></div>
+            <div class="language-selector">
+                <select>
+                    <option>English</option>
+                    <option>Spanish</option>
+                    <option>French</option>
+                </select>
             </div>
+            <div class="notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </div>
+            <div class="branch-selector">
+                <select>
+                    <option>Main Branch</option>
+                    <option>Branch 1</option>
+                    <option>Branch 2</option>
+                </select>
+            </div>
+            <div class="user-menu" id="userMenu">
+                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($userName ?? 'User'); ?>&background=0D8ABC&color=fff" alt="User" class="user-avatar">
+                <span class="user-name"><?php echo htmlspecialchars($userName ?? 'User'); ?></span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            
+            <!-- Dropdown menu for user actions -->
             <div class="user-dropdown" id="userDropdown">
+                <a href="#"><i class="fas fa-user"></i> Profile</a>
+                <a href="#"><i class="fas fa-cog"></i> Settings</a>
                 <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>
     </nav>
 
-    <div class="container-layout">
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Left Sidebar -->
         <aside class="sidebar">
+            <div class="user-profile">
+                <?php
+                $avatarBase = ($_SESSION['user_id'] ?? 'guest');
+                $avatarPathJ = 'uploads/avatars/' . $avatarBase . '.jpg';
+                $avatarPathP = 'uploads/avatars/' . $avatarBase . '.png';
+                $avatarPathW = 'uploads/avatars/' . $avatarBase . '.webp';
+                if (file_exists(__DIR__ . '/' . $avatarPathJ)) {
+                    $avatarUrl = $avatarPathJ;
+                } elseif (file_exists(__DIR__ . '/' . $avatarPathP)) {
+                    $avatarUrl = $avatarPathP;
+                } elseif (file_exists(__DIR__ . '/' . $avatarPathW)) {
+                    $avatarUrl = $avatarPathW;
+                } else {
+                    $avatarUrl = 'https://ui-avatars.com/api/?name=' . urlencode($userName ?? 'User') . '&background=0D8ABC&color=fff&size=64';
+                }
+                ?>
+                <img src="<?php echo $avatarUrl; ?>" alt="User" class="profile-image" id="profileImage">
+                <div class="user-info">
+                    <h3 class="user-name"><?php echo htmlspecialchars($userName ?? 'User'); ?></h3>
+                    <p class="user-role"><?php echo htmlspecialchars($userRole ?? 'Staff'); ?></p>
+                </div>
+                <form id="avatarForm" style="margin-top:8px;" enctype="multipart/form-data">
+                    <input type="file" id="avatarInput" name="avatar" accept="image/*" style="display:none;">
+                    <button type="button" class="btn btn-sm" id="uploadAvatarBtn" title="Upload profile picture"><i class="fas fa-camera"></i></button>
+                </form>
+            </div>
+            
             <nav class="sidebar-menu">
                 <a href="modern_dashboard.php" class="menu-item">
                     <i class="fas fa-home"></i>
@@ -214,28 +267,28 @@ $userRole = $_SESSION['role'] ?? "Staff";
                     <span>Products</span>
                 </a>
                 <a href="categories.php" class="menu-item">
-                    <i class="fas fa-list"></i>
+                    <i class="fas fa-tags"></i>
                     <span>Categories</span>
                 </a>
                 <a href="units.php" class="menu-item">
                     <i class="fas fa-ruler"></i>
                     <span>Units</span>
                 </a>
-                <a href="customers.php" class="menu-item active">
-                    <i class="fas fa-users"></i>
-                    <span>Customers</span>
-                </a>
                 <a href="sales.php" class="menu-item">
                     <i class="fas fa-shopping-cart"></i>
                     <span>Sales</span>
+                </a>
+                <a href="pos_system.php" class="menu-item">
+                    <i class="fas fa-cash-register"></i>
+                    <span>Point of Sale</span>
                 </a>
                 <a href="credit_sales.php" class="menu-item">
                     <i class="fas fa-credit-card"></i>
                     <span>Credit Sales</span>
                 </a>
-                <a href="pos.php" class="menu-item">
-                    <i class="fas fa-cash-register"></i>
-                    <span>Point of Sale</span>
+                <a href="customers.php" class="menu-item active">
+                    <i class="fas fa-users"></i>
+                    <span>Customers</span>
                 </a>
                 <a href="reports.php" class="menu-item">
                     <i class="fas fa-chart-bar"></i>
@@ -252,6 +305,7 @@ $userRole = $_SESSION['role'] ?? "Staff";
             </nav>
         </aside>
 
+        <!-- Main Content -->
         <main class="main-content">
             <div class="content-section">
                 <div class="section-header">
@@ -465,33 +519,36 @@ $userRole = $_SESSION['role'] ?? "Staff";
                 });
         }
 
-        async function deleteCustomer(id) {
-            if (!confirm('Are you sure you want to delete this customer?')) {
-                return;
-            }
-
-            try {
-                const response = await fetch('php/delete_customer.php', {
+        function deleteCustomer(id) {
+            showConfirm('Are you sure you want to delete this customer?', () => {
+                fetch('php/delete_customer.php', {
                     method: 'POST',
-                    body: new URLSearchParams({ id: id })
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        id: id
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showSuccess(data.message);
+                        loadCustomers();
+                    } else {
+                        showError(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showError('An error occurred while deleting the customer');
                 });
-
-                const data = await response.json();
-
-                if (data.status === 'success') {
-                    showSuccess(data.message);
-                    loadCustomers();
-                } else {
-                    showError(data.message);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showError('An error occurred');
-            }
+            });
         }
 
         loadCustomers();
     </script>
+    <script src="js/avatar.js"></script>
     <script src="js/toast.js"></script>
 </body>
 </html>
