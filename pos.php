@@ -20,8 +20,8 @@ $userRole = $_SESSION['role'] ?? "Staff";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Point of Sale - Inventory Management</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="css/modern_dashboard.css">
-    <link rel="stylesheet" href="css/toast.css">
+    <link rel="stylesheet" href="/emmanuel/css/modern_dashboard.css">
+    <link rel="stylesheet" href="/emmanuel/css/toast.css">
     <style>
         .pos-container {
             display: grid;
@@ -259,12 +259,24 @@ $userRole = $_SESSION['role'] ?? "Staff";
                     <span>Products</span>
                 </a>
                 <a href="categories.php" class="menu-item">
-                    <i class="fas fa-list"></i>
+                    <i class="fas fa-tags"></i>
                     <span>Categories</span>
                 </a>
                 <a href="units.php" class="menu-item">
                     <i class="fas fa-ruler"></i>
                     <span>Units</span>
+                </a>
+                <a href="suppliers.php" class="menu-item">
+                    <i class="fas fa-truck"></i>
+                    <span>Suppliers</span>
+                </a>
+                <a href="purchases.php" class="menu-item">
+                    <i class="fas fa-shopping-basket"></i>
+                    <span>Purchases</span>
+                </a>
+                <a href="expenses.php" class="menu-item">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Expenses</span>
                 </a>
                 <a href="customers.php" class="menu-item">
                     <i class="fas fa-users"></i>
@@ -529,6 +541,6 @@ $userRole = $_SESSION['role'] ?? "Staff";
 
         loadProducts();
     </script>
-    <script src="js/toast.js"></script>
+    <script src="/emmanuel/js/toast.js"></script>
 </body>
 </html>

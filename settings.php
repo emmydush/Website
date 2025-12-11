@@ -13,6 +13,21 @@ if (!isset($_SESSION['user_id'])) {
 $userName = $_SESSION['username'] ?? "User";
 $userRole = $_SESSION['role'] ?? "Staff";
 
+// Fetch real notification count
+$notificationCount = 0;
+try {
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*) as alert_count
+        FROM products 
+        WHERE quantity <= min_stock_level
+    ");
+    $stmt->execute();
+    $notificationCount = $stmt->fetch(PDO::FETCH_ASSOC)['alert_count'];
+} catch (PDOException $e) {
+    error_log("Notification count error: " . $e->getMessage());
+    $notificationCount = 0; // Default to 0 if there's an error
+}
+
 try {
     $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
@@ -28,8 +43,8 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Inventory Management</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="css/modern_dashboard.css">
-    <link rel="stylesheet" href="css/toast.css">
+    <link rel="stylesheet" href="/emmanuel/css/modern_dashboard.css">
+    <link rel="stylesheet" href="/emmanuel/css/toast.css">
     <style>
         .settings-container {
             display: grid;
@@ -247,7 +262,7 @@ try {
             </div>
             <div class="notifications">
                 <i class="fas fa-bell"></i>
-                <span class="notification-badge">3</span>
+                <span class="notification-badge"><?php echo $notificationCount; ?></span>
             </div>
             <div class="branch-selector">
                 <select>
@@ -300,6 +315,18 @@ try {
                     <i class="fas fa-ruler"></i>
                     <span>Units</span>
                 </a>
+                <a href="suppliers.php" class="menu-item">
+                    <i class="fas fa-truck"></i>
+                    <span>Suppliers</span>
+                </a>
+                <a href="purchases.php" class="menu-item">
+                    <i class="fas fa-shopping-basket"></i>
+                    <span>Purchases</span>
+                </a>
+                <a href="expenses.php" class="menu-item">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Expenses</span>
+                </a>
                 <a href="sales.php" class="menu-item">
                     <i class="fas fa-shopping-cart"></i>
                     <span>Sales</span>
@@ -332,19 +359,6 @@ try {
         </aside>
 
         <!-- Main Content -->
-        <main class="main-content">                    <span>Reports</span>
-                </a>
-                <a href="settings.php" class="menu-item active">
-                    <i class="fas fa-cog"></i>
-                    <span>Settings</span>
-                </a>
-                <a href="logout.php" class="menu-item logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </a>
-            </nav>
-        </aside>
-
         <main class="main-content">
             <div class="settings-container">
                 <div class="settings-menu">
@@ -536,7 +550,151 @@ try {
             showSuccess('Password changed successfully!');
             document.getElementById('passwordForm').reset();
         });
+
+        showPanel('profile');
+
+        // Notification badge click handler
+        const notificationBadge = document.querySelector('.notifications');
+        if (notificationBadge) {
+            notificationBadge.addEventListener('click', function(e) {
+                e.stopPropagation();
+                loadNotifications();
+            });
+        }
+
+        // Function to load and display notifications
+        function loadNotifications() {
+            fetch('php/stock_alerts.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success' && data.alerts.length > 0) {
+                        // Create notification dropdown
+                        createNotificationDropdown(data.alerts);
+                    } else {
+                        // Show info message if no alerts
+                        alert('No new notifications');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading notifications:', error);
+                    alert('Failed to load notifications');
+                });
+        }
+
+        // Function to create notification dropdown
+        function createNotificationDropdown(alerts) {
+            // Remove existing dropdown if present
+            const existingDropdown = document.querySelector('.notification-dropdown');
+            if (existingDropdown) {
+                existingDropdown.remove();
+            }
+            
+            // Create dropdown container
+            const dropdown = document.createElement('div');
+            dropdown.className = 'notification-dropdown';
+            dropdown.style.cssText = `
+                position: absolute;
+                top: 100%;
+                right: -100px;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+                width: 300px;
+                z-index: 1001;
+                margin-top: 10px;
+                max-height: 400px;
+                overflow-y: auto;
+            `;
+            
+            // Create dropdown header
+            const header = document.createElement('div');
+            header.style.cssText = `
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px;
+                border-bottom: 1px solid #eee;
+                background: #f8f9fa;
+            `;
+            header.innerHTML = `
+                <h3 style="font-size: 16px; font-weight: 600; margin: 0; color: #333;">Notifications (${alerts.length})</h3>
+                <button class="close-dropdown" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #999; padding: 0; width: 24px; height: 24px;">&times;</button>
+            `;
+            
+            // Create dropdown content
+            const content = document.createElement('div');
+            content.style.cssText = `
+                max-height: 300px;
+                overflow-y: auto;
+            `;
+            
+            // Add alerts to content
+            alerts.forEach(alert => {
+                const alertElement = document.createElement('div');
+                alertElement.style.cssText = `
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 10px;
+                    padding: 12px 15px;
+                    border-bottom: 1px solid #eee;
+                    font-size: 13px;
+                    line-height: 1.4;
+                `;
+                
+                // Set background based on alert type
+                if (alert.type === 'out_of_stock') {
+                    alertElement.style.background = '#ffebee';
+                } else if (alert.type === 'critical_low') {
+                    alertElement.style.background = '#fff3e0';
+                } else {
+                    alertElement.style.background = '#e8f5e9';
+                }
+                
+                // Set icon based on alert type
+                let iconClass = '';
+                let iconColor = '';
+                if (alert.type === 'out_of_stock') {
+                    iconClass = 'fas fa-times-circle';
+                    iconColor = '#f44336';
+                } else if (alert.type === 'critical_low') {
+                    iconClass = 'fas fa-exclamation-triangle';
+                    iconColor = '#ff9800';
+                } else {
+                    iconClass = 'fas fa-exclamation-circle';
+                    iconColor = '#4caf50';
+                }
+                
+                alertElement.innerHTML = `
+                    <i class="${iconClass}" style="font-size: 16px; margin-top: 2px; color: ${iconColor};"></i>
+                    <div style="flex: 1; color: #333;">${alert.message}</div>
+                `;
+                
+                content.appendChild(alertElement);
+            });
+            
+            // Add header and content to dropdown
+            dropdown.appendChild(header);
+            dropdown.appendChild(content);
+            
+            // Add dropdown to notifications container
+            const notificationsContainer = document.querySelector('.notifications');
+            notificationsContainer.appendChild(dropdown);
+            
+            // Add close button event
+            const closeBtn = dropdown.querySelector('.close-dropdown');
+            closeBtn.addEventListener('click', function() {
+                dropdown.remove();
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!notificationsContainer.contains(e.target)) {
+                    dropdown.remove();
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
+        }
     </script>
-    <script src="js/toast.js"></script>
+    <script src="/emmanuel/js/toast.js"></script>
 </body>
 </html>

@@ -40,6 +40,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Notification badge click handler
+    const notificationBadge = document.querySelector('.notifications');
+    if (notificationBadge) {
+        notificationBadge.addEventListener('click', function(e) {
+            e.stopPropagation();
+            loadNotifications();
+        });
+    }
+    
     // Sidebar menu item click handler
     const menuItems = document.querySelectorAll('.menu-item');
     menuItems.forEach((item, index) => {
@@ -123,6 +132,101 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize charts with real data
     initCharts();
 });
+
+// Function to load and display notifications
+function loadNotifications() {
+    fetch('php/stock_alerts.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success' && data.alerts.length > 0) {
+                // Create notification dropdown
+                createNotificationDropdown(data.alerts);
+            } else {
+                // Show info message if no alerts
+                const toast = new Toast();
+                toast.info('No new notifications', {
+                    title: 'All Clear'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error loading notifications:', error);
+            const toast = new Toast();
+            toast.error('Failed to load notifications', {
+                title: 'Error'
+            });
+        });
+}
+
+// Function to create notification dropdown
+function createNotificationDropdown(alerts) {
+    // Remove existing dropdown if present
+    const existingDropdown = document.querySelector('.notification-dropdown');
+    if (existingDropdown) {
+        existingDropdown.remove();
+    }
+    
+    // Create dropdown container
+    const dropdown = document.createElement('div');
+    dropdown.className = 'notification-dropdown';
+    
+    // Create dropdown header
+    const header = document.createElement('div');
+    header.className = 'notification-header';
+    header.innerHTML = `
+        <h3>Notifications (${alerts.length})</h3>
+        <button class="close-dropdown">&times;</button>
+    `;
+    
+    // Create dropdown content
+    const content = document.createElement('div');
+    content.className = 'notification-content';
+    
+    // Add alerts to content
+    alerts.forEach(alert => {
+        const alertElement = document.createElement('div');
+        alertElement.className = `notification-item ${alert.type}`;
+        
+        // Set icon based on alert type
+        let iconClass = '';
+        if (alert.type === 'out_of_stock') {
+            iconClass = 'fas fa-times-circle';
+        } else if (alert.type === 'critical_low') {
+            iconClass = 'fas fa-exclamation-triangle';
+        } else {
+            iconClass = 'fas fa-exclamation-circle';
+        }
+        
+        alertElement.innerHTML = `
+            <i class="${iconClass}"></i>
+            <div class="notification-text">${alert.message}</div>
+        `;
+        
+        content.appendChild(alertElement);
+    });
+    
+    // Add header and content to dropdown
+    dropdown.appendChild(header);
+    dropdown.appendChild(content);
+    
+    // Add dropdown to notifications container
+    const notificationsContainer = document.querySelector('.notifications');
+    notificationsContainer.appendChild(dropdown);
+    
+    // Add close button event
+    const closeBtn = dropdown.querySelector('.close-dropdown');
+    closeBtn.addEventListener('click', function() {
+        dropdown.remove();
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function closeDropdown(e) {
+        if (!notificationsContainer.contains(e.target)) {
+            dropdown.remove();
+            document.removeEventListener('click', closeDropdown);
+        }
+    });
+}
 
 // Initialize charts using Chart.js with real data
 function initCharts() {

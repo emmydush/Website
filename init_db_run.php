@@ -255,3 +255,105 @@ try {
     echo "<p><a href='javascript:location.reload()'>Try Again</a></p>";
 }
 ?>
+    $count = $stmt->fetchColumn();
+    
+    if ($count == 0) {
+        // Insert admin user
+        $hashedPassword = password_hash('admin123', PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)");
+        $stmt->execute(['admin', 'admin@inventory.com', $hashedPassword, 'admin']);
+        echo "✓ Admin user created<br>";
+    } else {
+        echo "✓ Admin user already exists<br>";
+    }
+    
+    // Check if units exist
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM units");
+    $stmt->execute();
+    $unitCount = $stmt->fetchColumn();
+    
+    if ($unitCount == 0) {
+        // Insert sample units
+        $units = [
+            ['Piece', 'pcs', 'Individual pieces'],
+            ['Kilogram', 'kg', 'Weight in kilograms'],
+            ['Liter', 'L', 'Volume in liters'],
+            ['Box', 'box', 'Individual boxes'],
+            ['Pack', 'pack', 'Packs of items'],
+            ['Meter', 'm', 'Length in meters'],
+            ['Dozen', 'dz', 'Group of twelve']
+        ];
+        
+        $stmt = $pdo->prepare("INSERT INTO units (name, abbreviation, description) VALUES (?, ?, ?)");
+        foreach ($units as $unit) {
+            $stmt->execute($unit);
+        }
+        echo "✓ Sample units created<br>";
+    } else {
+        echo "✓ Units already exist<br>";
+    }
+    
+    // Check if categories exist
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM categories");
+    $stmt->execute();
+    $catCount = $stmt->fetchColumn();
+    
+    if ($catCount == 0) {
+        // Insert sample categories
+        $categories = [
+            ['Electronics', 'Electronic devices and gadgets'],
+            ['Clothing', 'Apparel and fashion items'],
+            ['Food', 'Food and beverages'],
+            ['Books', 'Books and reading materials'],
+            ['Furniture', 'Home and office furniture'],
+            ['Hardware', 'Tools and building materials']
+        ];
+        
+        $stmt = $pdo->prepare("INSERT INTO categories (name, description) VALUES (?, ?)");
+        foreach ($categories as $cat) {
+            $stmt->execute($cat);
+        }
+        echo "✓ Sample categories created<br>";
+    } else {
+        echo "✓ Categories already exist<br>";
+    }
+    
+    // Check if products exist
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM products");
+    $stmt->execute();
+    $prodCount = $stmt->fetchColumn();
+    
+    if ($prodCount == 0) {
+        // Insert sample products
+        $products = [
+            ['Laptop Computer', 'High-performance laptop computer', 1, null, 999.99, 50, 5],
+            ['T-Shirt', 'Cotton t-shirt', 2, null, 19.99, 50, 100],
+            ['Coffee Beans', 'Premium coffee beans', 3, null, 12.99, 100, 50],
+            ['Programming Book', 'Python programming guide', 4, null, 39.99, 30, 20],
+            ['Office Chair', 'Ergonomic office chair', 5, null, 199.99, 15, 10],
+            ['Hammer', 'Steel hammer tool', 6, null, 24.99, 100, 50]
+        ];
+        
+        $stmt = $pdo->prepare("INSERT INTO products (name, description, category_id, supplier_id, price, quantity, min_stock_level) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        foreach ($products as $product) {
+            $stmt->execute($product);
+        }
+        echo "✓ Sample products created<br>";
+    } else {
+        echo "✓ Products already exist<br>";
+    }
+    
+    echo "<hr>";
+    echo "<h2>✓ Setup Complete!</h2>";
+    echo "<p><a href='login.html'>Go to Login Page</a></p>";
+    echo "<p><strong>Default admin login:</strong></p>";
+    echo "<ul>";
+    echo "<li>Username: <code>admin</code></li>";
+    echo "<li>Password: <code>admin123</code></li>";
+    echo "</ul>";
+    
+} catch(PDOException $e) {
+    echo "<h2>Error: " . $e->getMessage() . "</h2>";
+    echo "<p><a href='javascript:location.reload()'>Try Again</a></p>";
+}
+?>

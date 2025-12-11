@@ -1,16 +1,32 @@
 <?php
+header('Content-Type: application/json');
+session_start();
+
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+    exit();
+}
+
 require_once 'db_connect.php';
 
-// Get all products with category and supplier information
-$stmt = $pdo->prepare("
-    SELECT p.*, c.name as category_name, s.name as supplier_name 
-    FROM products p 
-    LEFT JOIN categories c ON p.category_id = c.id 
-    LEFT JOIN suppliers s ON p.supplier_id = s.id 
-    ORDER BY p.created_at DESC
-");
-$stmt->execute();
-$products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-echo json_encode(['status' => 'success', 'data' => $products]);
+try {
+    $stmt = $pdo->prepare("
+        SELECT id, name 
+        FROM products 
+        ORDER BY name
+    ");
+    $stmt->execute();
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    echo json_encode([
+        'status' => 'success',
+        'products' => $products
+    ]);
+} catch (PDOException $e) {
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Database error: ' . $e->getMessage()
+    ]);
+}
 ?>

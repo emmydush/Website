@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test New Modules</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .module-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .module-link {
+            display: block;
+            padding: 20px;
+            text-align: center;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .module-link:hover {
+            background-color: #45a049;
+        }
+        .module-link.supplier {
+            background-color: #2196F3;
+        }
+        .module-link.supplier:hover {
+            background-color: #1976D2;
+        }
+        .module-link.purchase {
+            background-color: #FF9800;
+        }
+        .module-link.purchase:hover {
+            background-color: #F57C00;
+        }
+        .module-link.expense {
+            background-color: #9C27B0;
+        }
+        .module-link.expense:hover {
+            background-color: #7B1FA2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test New Inventory Modules</h1>
+        <p>Click on any of the links below to test the newly created modules:</p>
+        
+        <div class="module-links">
+            <a href="suppliers.php" class="module-link supplier">Suppliers Module</a>
+            <a href="purchases.php" class="module-link purchase">Purchases Module</a>
+            <a href="expenses.php" class="module-link expense">Expenses Module</a>
+        </div>
+        
+        <p style="margin-top: 30px; text-align: center;">
+            <a href="modern_dashboard.php" style="color: #4CAF50; text-decoration: none; font-weight: bold;">← Back to Dashboard</a>
+        </p>
+    </div>
+</body>
+</html>

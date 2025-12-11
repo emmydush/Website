@@ -24,6 +24,21 @@ $stockValue = 42680.00;
 $userName = isset($_SESSION['username']) ? $_SESSION['username'] : "Emmanuel";
 $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : "Administrator";
 
+// Fetch real notification count
+$notificationCount = 0;
+try {
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*) as alert_count
+        FROM products 
+        WHERE quantity <= min_stock_level
+    ");
+    $stmt->execute();
+    $notificationCount = $stmt->fetch(PDO::FETCH_ASSOC)['alert_count'];
+} catch (PDOException $e) {
+    error_log("Notification count error: " . $e->getMessage());
+    $notificationCount = 0; // Default to 0 if there's an error
+}
+
 // Fetch categories and suppliers for the form
 $categories = [];
 $suppliers = [];
@@ -49,8 +64,8 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products - Inventory Management System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="css/modern_dashboard.css">
-    <link rel="stylesheet" href="css/toast.css">
+    <link rel="stylesheet" href="/emmanuel/css/modern_dashboard.css">
+    <link rel="stylesheet" href="/emmanuel/css/toast.css">
     <style>
         .products-header {
             display: flex;
@@ -430,7 +445,7 @@ try {
             </div>
             <div class="notifications">
                 <i class="fas fa-bell"></i>
-                <span class="notification-badge">3</span>
+                <span class="notification-badge"><?php echo $notificationCount; ?></span>
             </div>
             <div class="branch-selector">
                 <select>
@@ -475,15 +490,27 @@ try {
                     <i class="fas fa-box"></i>
                     <span>Products</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="categories.php" class="menu-item">
                     <i class="fas fa-tags"></i>
                     <span>Categories</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="units.php" class="menu-item">
                     <i class="fas fa-ruler"></i>
                     <span>Units</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="suppliers.php" class="menu-item">
+                    <i class="fas fa-truck"></i>
+                    <span>Suppliers</span>
+                </a>
+                <a href="purchases.php" class="menu-item">
+                    <i class="fas fa-shopping-basket"></i>
+                    <span>Purchases</span>
+                </a>
+                <a href="expenses.php" class="menu-item">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Expenses</span>
+                </a>
+                <a href="sales.php" class="menu-item">
                     <i class="fas fa-shopping-cart"></i>
                     <span>Sales</span>
                 </a>
@@ -491,23 +518,23 @@ try {
                     <i class="fas fa-cash-register"></i>
                     <span>Point of Sale</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="credit_sales.php" class="menu-item">
                     <i class="fas fa-credit-card"></i>
                     <span>Credit Sales</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="customers.php" class="menu-item">
                     <i class="fas fa-users"></i>
                     <span>Customers</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="reports.php" class="menu-item">
                     <i class="fas fa-chart-bar"></i>
                     <span>Reports</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="settings.php" class="menu-item">
                     <i class="fas fa-cog"></i>
                     <span>Settings</span>
                 </a>
-                <a href="#" class="menu-item logout">
+                <a href="logout.php" class="menu-item logout">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
                 </a>
@@ -625,7 +652,7 @@ try {
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
-    <script src="js/modern_dashboard.js"></script>
+    <script src="/emmanuel/js/modern_dashboard.js"></script>
     <script>
         // DOM Elements
         const addProductBtn = document.getElementById('addProductBtn');
@@ -640,7 +667,21 @@ try {
         const cameraScanBtn = document.getElementById('cameraScanBtn');
 
         // Load products when page loads
-        document.addEventListener('DOMContentLoaded', loadProducts);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add a small delay to ensure all elements are loaded
+            setTimeout(function() {
+                loadProducts();
+            }, 100);
+            
+            // Notification badge click handler
+            const notificationBadge = document.querySelector('.notifications');
+            if (notificationBadge) {
+                notificationBadge.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    loadNotifications();
+                });
+            }
+        });
 
         // Open modal for adding new product
         addProductBtn.addEventListener('click', () => {
@@ -798,22 +839,35 @@ try {
 
         // Load products from server
         function loadProducts(searchTerm = '') {
+            console.log('Loading products with search term:', searchTerm);
+            
             fetch('php/get_products.php')
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Received response from server');
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Parsed JSON data:', data);
                     if (data.status === 'success') {
                         displayProducts(data.data, searchTerm);
                     } else {
                         console.error('Error loading products:', data.message);
+                        productsTableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 20px; color: #dc3545;">Error loading products: ${data.message}</td></tr>`;
                     }
                 })
                 .catch(error => {
                     console.error('Error loading products:', error);
+                    productsTableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 20px; color: #dc3545;">Failed to load products. Please check your connection and try again.</td></tr>`;
                 });
         }
 
         // Display products in table
         function displayProducts(products, searchTerm = '') {
+            console.log('Displaying products:', products, 'Search term:', searchTerm);
+            
             // Filter products based on search term
             if (searchTerm) {
                 products = products.filter(product => 
@@ -823,63 +877,56 @@ try {
                     product.supplier_name?.toLowerCase().includes(searchTerm.toLowerCase())
                 );
             }
-
-            // Clear table
-            productsTableBody.innerHTML = '';
-
-            // Show message if no products found
+            
+            let html = '';
             if (products.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td colspan="8" style="text-align: center; padding: 20px;">
-                        No products found. ${searchTerm ? 'Try a different search term.' : 'Add a new product to get started.'}
-                    </td>
-                `;
-                productsTableBody.appendChild(row);
-                return;
+                html = '<tr><td colspan="8" style="text-align: center; padding: 20px;">No products found.</td></tr>';
+            } else {
+                products.forEach(product => {
+                    // Determine stock status
+                    let stockStatus = '';
+                    let stockClass = '';
+                    if (product.quantity == 0) {
+                        stockStatus = 'Out of Stock';
+                        stockClass = 'status-out';
+                    } else if (product.quantity <= product.min_stock_level) {
+                        stockStatus = 'Low Stock';
+                        stockClass = 'status-low';
+                    } else {
+                        stockStatus = 'In Stock';
+                        stockClass = 'status-in';
+                    }
+                    
+                    html += `
+                        <tr>
+                            <td>${product.id}</td>
+                            <td>
+                                <div class="product-info">
+                                    <strong>${product.name}</strong>
+                                    <div class="product-description">${product.description || 'No description'}</div>
+                                </div>
+                            </td>
+                            <td>${product.category_name || 'Uncategorized'}</td>
+                            <td>${product.supplier_name || 'No supplier'}</td>
+                            <td>FRW ${parseFloat(product.price).toLocaleString()}</td>
+                            <td>${parseFloat(product.quantity).toFixed(2)} ${product.unit_name || ''}</td>
+                            <td><span class="status-badge ${stockClass}">${stockStatus}</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-edit" onclick="editProduct(${product.id})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-delete" onclick="deleteProduct(${product.id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
             }
-
-            // Add products to table
-            products.forEach(product => {
-                const row = document.createElement('tr');
-                
-                // Determine stock status
-                let status = '';
-                let statusClass = '';
-                if (product.quantity == 0) {
-                    status = 'Out of Stock';
-                    statusClass = 'status-out';
-                } else if (product.quantity <= product.min_stock_level) {
-                    status = 'Low Stock';
-                    statusClass = 'status-low';
-                } else {
-                    status = 'In Stock';
-                    statusClass = 'status-in';
-                }
-
-                row.innerHTML = `
-                    <td>${product.id}</td>
-                    <td>
-                        <strong>${product.name}</strong>
-                        ${product.barcode ? `<br><small>Barcode: ${product.barcode}</small>` : ''}
-                    </td>
-                    <td>${product.category_name || 'N/A'}</td>
-                    <td>${product.supplier_name || 'N/A'}</td>
-                    <td>$${parseFloat(product.price).toFixed(2)}</td>
-                    <td>${product.quantity}</td>
-                    <td><span class="status ${statusClass}">${status}</span></td>
-                    <td class="action-buttons">
-                        <button class="btn-edit" onclick="editProduct(${product.id})" title="Edit Product">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-delete" onclick="deleteProduct(${product.id})" title="Delete Product">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                
-                productsTableBody.appendChild(row);
-            });
+            
+            productsTableBody.innerHTML = html;
         }
 
         // Save product (add or update)
@@ -1153,6 +1200,18 @@ try {
             });
         }
 
+        // Show add product form
+        function showAddProductForm() {
+            // Reset form
+            productForm.reset();
+            document.getElementById('productId').value = '';
+            document.getElementById('productMinStock').value = '10';
+            modalTitle.textContent = 'Add New Product';
+            productModal.style.display = 'flex';
+            // Focus on first field
+            document.getElementById('productName').focus();
+        }
+
         // Display products in product cards
         function displayProductsInCards(products, searchTerm = '') {
             // Filter products based on search term
@@ -1172,7 +1231,7 @@ try {
             if (products.length === 0) {
                 productsContainer.innerHTML = `
                     <div style="text-align: center; padding: 20px;">
-                        No products found. ${searchTerm ? 'Try a different search term.' : 'Add a new product to get started.'}
+                        No products found. ${searchTerm ? 'Try a different search term.' : '<a href="#" onclick="showAddProductForm()">Add a new product</a> to get started.'}
                     </div>
                 `;
                 return;
@@ -1196,6 +1255,139 @@ try {
                 </div>`;
             });
             productsContainer.innerHTML = html;
+        }
+
+        // Function to load and display notifications
+        function loadNotifications() {
+            fetch('php/stock_alerts.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success' && data.alerts.length > 0) {
+                        // Create notification dropdown
+                        createNotificationDropdown(data.alerts);
+                    } else {
+                        // Show info message if no alerts
+                        alert('No new notifications');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading notifications:', error);
+                    alert('Failed to load notifications');
+                });
+        }
+
+        // Function to create notification dropdown
+        function createNotificationDropdown(alerts) {
+            // Remove existing dropdown if present
+            const existingDropdown = document.querySelector('.notification-dropdown');
+            if (existingDropdown) {
+                existingDropdown.remove();
+            }
+            
+            // Create dropdown container
+            const dropdown = document.createElement('div');
+            dropdown.className = 'notification-dropdown';
+            dropdown.style.cssText = `
+                position: absolute;
+                top: 100%;
+                right: -100px;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+                width: 300px;
+                z-index: 1001;
+                margin-top: 10px;
+                max-height: 400px;
+                overflow-y: auto;
+            `;
+            
+            // Create dropdown header
+            const header = document.createElement('div');
+            header.style.cssText = `
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px;
+                border-bottom: 1px solid #eee;
+                background: #f8f9fa;
+            `;
+            header.innerHTML = `
+                <h3 style="font-size: 16px; font-weight: 600; margin: 0; color: #333;">Notifications (${alerts.length})</h3>
+                <button class="close-dropdown" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #999; padding: 0; width: 24px; height: 24px;">&times;</button>
+            `;
+            
+            // Create dropdown content
+            const content = document.createElement('div');
+            content.style.cssText = `
+                max-height: 300px;
+                overflow-y: auto;
+            `;
+            
+            // Add alerts to content
+            alerts.forEach(alert => {
+                const alertElement = document.createElement('div');
+                alertElement.style.cssText = `
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 10px;
+                    padding: 12px 15px;
+                    border-bottom: 1px solid #eee;
+                    font-size: 13px;
+                    line-height: 1.4;
+                `;
+                
+                // Set background based on alert type
+                if (alert.type === 'out_of_stock') {
+                    alertElement.style.background = '#ffebee';
+                } else if (alert.type === 'critical_low') {
+                    alertElement.style.background = '#fff3e0';
+                } else {
+                    alertElement.style.background = '#e8f5e9';
+                }
+                
+                // Set icon based on alert type
+                let iconClass = '';
+                let iconColor = '';
+                if (alert.type === 'out_of_stock') {
+                    iconClass = 'fas fa-times-circle';
+                    iconColor = '#f44336';
+                } else if (alert.type === 'critical_low') {
+                    iconClass = 'fas fa-exclamation-triangle';
+                    iconColor = '#ff9800';
+                } else {
+                    iconClass = 'fas fa-exclamation-circle';
+                    iconColor = '#4caf50';
+                }
+                
+                alertElement.innerHTML = `
+                    <i class="${iconClass}" style="font-size: 16px; margin-top: 2px; color: ${iconColor};"></i>
+                    <div style="flex: 1; color: #333;">${alert.message}</div>
+                `;
+                
+                content.appendChild(alertElement);
+            });
+            
+            // Add header and content to dropdown
+            dropdown.appendChild(header);
+            dropdown.appendChild(content);
+            
+            // Add dropdown to notifications container
+            const notificationsContainer = document.querySelector('.notifications');
+            notificationsContainer.appendChild(dropdown);
+            
+            // Add close button event
+            const closeBtn = dropdown.querySelector('.close-dropdown');
+            closeBtn.addEventListener('click', function() {
+                dropdown.remove();
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!notificationsContainer.contains(e.target)) {
+                    dropdown.remove();
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
         }
 
     </script>

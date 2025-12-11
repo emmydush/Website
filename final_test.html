@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Products Test</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fb;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .actions {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 0 10px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-in {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-low {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-out {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .message {
+            padding: 20px;
+            text-align: center;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-box"></i> Final Products Display Test</h1>
+        
+        <div class="actions">
+            <button onclick="loadProducts()"><i class="fas fa-sync"></i> Load Products</button>
+            <button onclick="populateProducts()"><i class="fas fa-plus"></i> Populate Sample Products</button>
+        </div>
+        
+        <div id="messageArea"></div>
+        
+        <div class="table-container">
+            <table id="productsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Supplier</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="productsTableBody">
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 20px;">
+                            Click "Load Products" to load product data
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Display a message
+        function showMessage(message, type = 'info') {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = `<div class="message ${type}">${message}</div>`;
+        }
+        
+        // Load products from server
+        function loadProducts() {
+            showMessage('Loading products...', 'info');
+            
+            fetch('debug_products.php')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        displayProducts(data.data);
+                        showMessage(`Successfully loaded ${data.count} products`, 'success');
+                    } else {
+                        showMessage(`Error loading products: ${data.message}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading products:', error);
+                    showMessage(`Failed to load products: ${error.message}`, 'error');
+                });
+        }
+        
+        // Populate sample products
+        function populateProducts() {
+            showMessage('Populating sample products...', 'info');
+            
+            fetch('populate_products.php')
+                .then(response => response.text())
+                .then(html => {
+                    showMessage('Sample products populated. Please click "Load Products" to refresh the table.', 'success');
+                    // Show the response in a pre tag for debugging
+                    const pre = document.createElement('pre');
+                    pre.textContent = html;
+                    document.getElementById('messageArea').appendChild(pre);
+                })
+                .catch(error => {
+                    console.error('Error populating products:', error);
+                    showMessage(`Failed to populate products: ${error.message}`, 'error');
+                });
+        }
+        
+        // Display products in table
+        function displayProducts(products) {
+            const tbody = document.getElementById('productsTableBody');
+            
+            if (!Array.isArray(products) || products.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 20px;">
+                            No products found in the database
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            products.forEach(product => {
+                // Determine stock status
+                let status = '';
+                let statusClass = '';
+                const quantity = parseInt(product.quantity) || 0;
+                const minStockLevel = parseInt(product.min_stock_level) || 0;
+                
+                if (quantity == 0) {
+                    status = 'Out of Stock';
+                    statusClass = 'status-out';
+                } else if (quantity <= minStockLevel) {
+                    status = 'Low Stock';
+                    statusClass = 'status-low';
+                } else {
+                    status = 'In Stock';
+                    statusClass = 'status-in';
+                }
+                
+                html += `
+                    <tr>
+                        <td>${product.id || 'N/A'}</td>
+                        <td>
+                            <strong>${product.name || 'Unnamed Product'}</strong>
+                            ${product.barcode ? `<br><small>Barcode: ${product.barcode}</small>` : ''}
+                        </td>
+                        <td>${product.category_name || 'N/A'}</td>
+                        <td>${product.supplier_name || 'N/A'}</td>
+                        <td>$${(parseFloat(product.price) || 0).toFixed(2)}</td>
+                        <td>${quantity}</td>
+                        <td><span class="status ${statusClass}">${status}</span></td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+        
+        // Load products when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            showMessage('Ready. Click "Load Products" to begin.', 'info');
+        });
+    </script>
+</body>
+</html>

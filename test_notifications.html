@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Notifications</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f7fb;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        .notifications {
+            position: relative;
+            cursor: pointer;
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+        .fa-bell {
+            font-size: 24px;
+            color: #1a3a5f;
+        }
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff5252;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        button {
+            background: #1a3a5f;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #2c3e50;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 5px;
+            border-left: 4px solid #4caf50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Notification System Test</h1>
+        
+        <div class="notifications" id="notificationContainer">
+            <i class="fas fa-bell"></i>
+            <span class="notification-badge" id="notificationCount">0</span>
+        </div>
+        
+        <p>Click the bell icon above to test the notification dropdown functionality.</p>
+        
+        <button onclick="testNotifications()">Load Sample Notifications</button>
+        <button onclick="clearNotifications()">Clear Notifications</button>
+        
+        <div class="result" id="result">
+            <p>Test results will appear here...</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize notification count
+        let notificationCount = 0;
+        
+        // Add event listener to notification bell
+        document.getElementById('notificationContainer').addEventListener('click', function(e) {
+            e.stopPropagation();
+            loadNotifications();
+        });
+        
+        // Function to test notifications
+        function testNotifications() {
+            // Simulate loading notifications
+            notificationCount = 3;
+            document.getElementById('notificationCount').textContent = notificationCount;
+            
+            document.getElementById('result').innerHTML = `
+                <p><strong>Test Result:</strong> Loaded ${notificationCount} sample notifications.</p>
+                <p>Click the bell icon to see the notification dropdown.</p>
+            `;
+        }
+        
+        // Function to clear notifications
+        function clearNotifications() {
+            notificationCount = 0;
+            document.getElementById('notificationCount').textContent = notificationCount;
+            
+            document.getElementById('result').innerHTML = `
+                <p><strong>Test Result:</strong> Cleared all notifications.</p>
+            `;
+        }
+        
+        // Function to load and display notifications
+        function loadNotifications() {
+            if (notificationCount > 0) {
+                // Create sample alerts
+                const alerts = [
+                    {
+                        type: 'out_of_stock',
+                        message: '⚠️ Product "Wireless Headphones" is out of stock'
+                    },
+                    {
+                        type: 'critical_low',
+                        message: '⚠️ Product "Smartphone Charger" reducing abnormally'
+                    },
+                    {
+                        type: 'low_stock',
+                        message: '⚠️ Low stock – possible missing items for "USB Cable"'
+                    }
+                ];
+                
+                // Create notification dropdown
+                createNotificationDropdown(alerts);
+            } else {
+                alert('No new notifications');
+            }
+        }
+        
+        // Function to create notification dropdown
+        function createNotificationDropdown(alerts) {
+            // Remove existing dropdown if present
+            const existingDropdown = document.querySelector('.notification-dropdown');
+            if (existingDropdown) {
+                existingDropdown.remove();
+            }
+            
+            // Create dropdown container
+            const dropdown = document.createElement('div');
+            dropdown.className = 'notification-dropdown';
+            dropdown.style.cssText = `
+                position: absolute;
+                top: 100%;
+                right: -100px;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+                width: 300px;
+                z-index: 1001;
+                margin-top: 10px;
+                max-height: 400px;
+                overflow-y: auto;
+            `;
+            
+            // Create dropdown header
+            const header = document.createElement('div');
+            header.style.cssText = `
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px;
+                border-bottom: 1px solid #eee;
+                background: #f8f9fa;
+            `;
+            header.innerHTML = `
+                <h3 style="font-size: 16px; font-weight: 600; margin: 0; color: #333;">Notifications (${alerts.length})</h3>
+                <button class="close-dropdown" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #999; padding: 0; width: 24px; height: 24px;">&times;</button>
+            `;
+            
+            // Create dropdown content
+            const content = document.createElement('div');
+            content.style.cssText = `
+                max-height: 300px;
+                overflow-y: auto;
+            `;
+            
+            // Add alerts to content
+            alerts.forEach(alert => {
+                const alertElement = document.createElement('div');
+                alertElement.style.cssText = `
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 10px;
+                    padding: 12px 15px;
+                    border-bottom: 1px solid #eee;
+                    font-size: 13px;
+                    line-height: 1.4;
+                `;
+                
+                // Set background based on alert type
+                if (alert.type === 'out_of_stock') {
+                    alertElement.style.background = '#ffebee';
+                } else if (alert.type === 'critical_low') {
+                    alertElement.style.background = '#fff3e0';
+                } else {
+                    alertElement.style.background = '#e8f5e9';
+                }
+                
+                // Set icon based on alert type
+                let iconClass = '';
+                let iconColor = '';
+                if (alert.type === 'out_of_stock') {
+                    iconClass = 'fas fa-times-circle';
+                    iconColor = '#f44336';
+                } else if (alert.type === 'critical_low') {
+                    iconClass = 'fas fa-exclamation-triangle';
+                    iconColor = '#ff9800';
+                } else {
+                    iconClass = 'fas fa-exclamation-circle';
+                    iconColor = '#4caf50';
+                }
+                
+                alertElement.innerHTML = `
+                    <i class="${iconClass}" style="font-size: 16px; margin-top: 2px; color: ${iconColor};"></i>
+                    <div style="flex: 1;">${alert.message}</div>
+                `;
+                
+                content.appendChild(alertElement);
+            });
+            
+            // Add header and content to dropdown
+            dropdown.appendChild(header);
+            dropdown.appendChild(content);
+            
+            // Add dropdown to notifications container
+            const notificationsContainer = document.getElementById('notificationContainer');
+            notificationsContainer.appendChild(dropdown);
+            
+            // Add close button event
+            const closeBtn = dropdown.querySelector('.close-dropdown');
+            closeBtn.addEventListener('click', function() {
+                dropdown.remove();
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!notificationsContainer.contains(e.target)) {
+                    dropdown.remove();
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

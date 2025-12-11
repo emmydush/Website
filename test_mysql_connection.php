@@ -1,15 +1,16 @@
 <?php
+// Test MySQL connection
+echo "<h2>MySQL Database Connection Test</h2>";
+
 // Database configuration
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 define('DB_NAME', 'inventory_management');
 
-echo "<h2>Database Connection Test (MySQL Version)</h2>";
-
-// Test 1: Check if we can connect to MySQL server
-echo "<h3>Test 1: Connecting to MySQL server...</h3>";
 try {
+    // Test 1: Connect to MySQL server
+    echo "<h3>Test 1: Connecting to MySQL server...</h3>";
     $pdo = new PDO("mysql:host=" . DB_HOST, DB_USER, DB_PASS);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     echo "<p style='color: green;'>✓ Successfully connected to MySQL server</p>";

@@ -10,5 +10,5 @@ echo "Login simulation complete. Session variables set:<br>";
 echo "user_id: " . $_SESSION['user_id'] . "<br>";
 echo "username: " . $_SESSION['username'] . "<br>";
 echo "role: " . $_SESSION['role'] . "<br>";
-echo "<br><a href='modern_dashboard.php'>Go to Dashboard</a>";
+echo "<br><a href='/modern_dashboard'>Go to Dashboard</a>";
 ?>

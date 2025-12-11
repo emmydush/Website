@@ -22,9 +22,9 @@ $userName = $_SESSION['username'] ?? "User";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Point of Sale - Inventory Management</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="css/modern_dashboard.css">
-    <link rel="stylesheet" href="css/toast.css">
-    <link rel="stylesheet" href="css/pos.css">
+    <link rel="stylesheet" href="/emmanuel/css/modern_dashboard.css">
+    <link rel="stylesheet" href="/emmanuel/css/toast.css">
+    <link rel="stylesheet" href="/emmanuel/css/pos.css">
 </head>
 <body>
     <!-- Top Navigation Bar -->
@@ -91,6 +91,18 @@ $userName = $_SESSION['username'] ?? "User";
                     <i class="fas fa-ruler"></i>
                     <span>Units</span>
                 </a>
+                <a href="suppliers.php" class="menu-item">
+                    <i class="fas fa-truck"></i>
+                    <span>Suppliers</span>
+                </a>
+                <a href="purchases.php" class="menu-item">
+                    <i class="fas fa-shopping-basket"></i>
+                    <span>Purchases</span>
+                </a>
+                <a href="expenses.php" class="menu-item">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Expenses</span>
+                </a>
                 <a href="sales.php" class="menu-item">
                     <i class="fas fa-shopping-cart"></i>
                     <span>Sales</span>
@@ -103,13 +115,17 @@ $userName = $_SESSION['username'] ?? "User";
                     <i class="fas fa-credit-card"></i>
                     <span>Credit Sales</span>
                 </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <span>Overdue Credits</span>
+                <a href="customers.php" class="menu-item">
+                    <i class="fas fa-users"></i>
+                    <span>Customers</span>
                 </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-cube"></i>
-                    <span>Purchases</span>
+                <a href="reports.php" class="menu-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="settings.php" class="menu-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
                 </a>
                 <a href="logout.php" class="menu-item logout">
                     <i class="fas fa-sign-out-alt"></i>
@@ -229,8 +245,8 @@ $userName = $_SESSION['username'] ?? "User";
         </main>
     </div>
 
-    <script src="js/avatar.js"></script>
-    <script src="js/toast.js"></script>
-    <script src="js/pos.js"></script>
+    <script src="/emmanuel/js/avatar.js"></script>
+    <script src="/emmanuel/js/toast.js"></script>
+    <script src="/emmanuel/js/pos.js"></script>
 </body>
 </html>
