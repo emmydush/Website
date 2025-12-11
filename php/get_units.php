@@ -2,7 +2,7 @@
 require_once 'db_connect.php';
 
 try {
-    $stmt = $pdo->prepare("SELECT * FROM units ORDER BY name ASC");
+    $stmt = $pdo->prepare("SELECT * FROM units ORDER BY created_at DESC");
     $stmt->execute();
     $units = $stmt->fetchAll(PDO::FETCH_ASSOC);
     

@@ -2,13 +2,7 @@
 require_once 'db_connect.php';
 
 try {
-    $stmt = $pdo->prepare("
-        SELECT c.*, COUNT(p.id) as product_count 
-        FROM categories c 
-        LEFT JOIN products p ON c.id = p.category_id 
-        GROUP BY c.id 
-        ORDER BY c.name ASC
-    ");
+    $stmt = $pdo->prepare("SELECT * FROM categories ORDER BY created_at DESC");
     $stmt->execute();
     $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
     

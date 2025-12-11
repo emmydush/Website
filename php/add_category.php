@@ -1,5 +1,6 @@
 <?php
 require_once 'db_connect.php';
+session_start();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name = $_POST['name'] ?? '';
@@ -11,10 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     
     try {
-        $stmt = $pdo->prepare("
-            INSERT INTO categories (name, description) 
-            VALUES (?, ?)
-        ");
+        $stmt = $pdo->prepare("INSERT INTO categories (name, description) VALUES (?, ?)");
         
         if ($stmt->execute([$name, $description])) {
             $category_id = $pdo->lastInsertId();

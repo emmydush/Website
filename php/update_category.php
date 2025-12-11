@@ -1,5 +1,6 @@
 <?php
 require_once 'db_connect.php';
+session_start();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $id = $_POST['id'] ?? '';
@@ -12,9 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     
     try {
-        $stmt = $pdo->prepare("
-            UPDATE categories SET name = ?, description = ? WHERE id = ?
-        ");
+        $stmt = $pdo->prepare("UPDATE categories SET name = ?, description = ? WHERE id = ?");
         
         if ($stmt->execute([$name, $description, $id])) {
             echo json_encode(['status' => 'success', 'message' => 'Category updated successfully']);

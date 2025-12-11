@@ -81,15 +81,11 @@ try {
     <title>Modern Inventory Management Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/modern_dashboard.css">
-    <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
     <!-- Top Navigation Bar -->
     <nav class="top-nav">
         <div class="nav-left">
-            <button id="mobileMenuToggle" style="display:none; background:none; border:none; color:white; font-size:24px; cursor:pointer; margin-right:15px;" class="show-mobile">
-                <i class="fas fa-bars"></i>
-            </button>
             <div class="logo">InventoryPro</div>
         </div>
         <div class="nav-right">

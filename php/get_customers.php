@@ -2,13 +2,7 @@
 require_once 'db_connect.php';
 
 try {
-    $stmt = $pdo->prepare("
-        SELECT c.*, COUNT(s.id) as total_purchases 
-        FROM customers c 
-        LEFT JOIN sales s ON c.id = s.customer_id 
-        GROUP BY c.id 
-        ORDER BY c.name ASC
-    ");
+    $stmt = $pdo->prepare("SELECT * FROM customers ORDER BY created_at DESC");
     $stmt->execute();
     $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
     

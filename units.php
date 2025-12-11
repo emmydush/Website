@@ -1,5 +1,7 @@
 <?php
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+ini_set('display_errors', 1);
+
 session_start();
 require_once 'php/db_connect.php';
 
@@ -16,208 +18,158 @@ $userRole = $_SESSION['role'] ?? "Staff";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Units - Inventory Management System</title>
+    <title>Units - Inventory Management</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/modern_dashboard.css">
-    <link rel="stylesheet" href="css/responsive.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <link rel="stylesheet" href="css/toast.css">
     <style>
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-        }
-        
-        .units-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-        }
-        
-        .units-table th,
-        .units-table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .units-table th {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: white;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 14px;
-        }
-        
-        .units-table tr:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .btn-edit, .btn-delete {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .btn-edit {
-            background-color: #ffc107;
-            color: #212529;
-        }
-        
-        .btn-edit:hover {
-            background-color: #e0a800;
-        }
-        
-        .btn-delete {
-            background-color: #dc3545;
-            color: white;
-        }
-        
-        .btn-delete:hover {
-            background-color: #c82333;
-        }
-        
         .modal {
             display: none;
             position: fixed;
-            top: 0;
+            z-index: 1000;
             left: 0;
+            top: 0;
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
         }
-        
-        .modal-content {
-            background: white;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 450px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-        
-        .modal-header {
+        .modal.show {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+            justify-content: center;
         }
-        
+        .modal-content {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+        }
+        .modal-header {
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 1rem;
+        }
         .modal-header h2 {
             margin: 0;
+            font-size: 1.5rem;
             color: #333;
-            font-size: 24px;
         }
-        
-        .close {
-            font-size: 28px;
-            cursor: pointer;
-            color: #999;
-            transition: color 0.2s;
+        .modal-body {
+            margin-bottom: 1.5rem;
         }
-        
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
         }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        
         .form-group label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #777;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
         }
-        
-        .form-group input {
+        .form-group input,
+        .form-group textarea {
             width: 100%;
-            padding: 12px 15px;
+            padding: 0.75rem;
             border: 1px solid #ddd;
             border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 16px;
-            transition: border-color 0.3s;
+            font-family: inherit;
         }
-        
-        .form-group input:focus {
-            border-color: #6a11cb;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
         }
-        
-        .form-actions {
+        .modal-footer {
             display: flex;
+            gap: 1rem;
             justify-content: flex-end;
-            gap: 12px;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
         }
-        
-        .btn-cancel {
-            background-color: #e0e0e0;
-            color: #333;
+        .btn {
+            padding: 0.75rem 1.5rem;
             border: none;
-            padding: 10px 20px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
+            transition: all 0.3s;
         }
-        
-        .btn-cancel:hover {
-            background-color: #d0d0d0;
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
         }
-        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+        .btn-edit {
+            background: #4CAF50;
+            color: white;
+        }
+        .btn-delete {
+            background: #f44336;
+            color: white;
+        }
+        .units-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2rem;
+        }
+        .units-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        .units-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .units-table tr:hover {
+            background: #f9f9f9;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .content-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin: 2rem 0;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .section-header h2 {
+            margin: 0;
+            color: #333;
+            font-size: 1.75rem;
+        }
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 3rem;
             color: #999;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
         }
     </style>
 </head>
@@ -228,28 +180,17 @@ $userRole = $_SESSION['role'] ?? "Staff";
         </div>
         <div class="nav-right">
             <div class="user-menu" id="userMenu">
-                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($userName ?? 'User'); ?>&background=0D8ABC&color=fff" alt="User" class="user-avatar">
-                <span class="user-name"><?php echo htmlspecialchars($userName ?? 'User'); ?></span>
-                <i class="fas fa-chevron-down"></i>
+                <i class="fas fa-user-circle"></i>
+                <span><?php echo htmlspecialchars($userName); ?></span>
             </div>
             <div class="user-dropdown" id="userDropdown">
-                <a href="#"><i class="fas fa-user"></i> Profile</a>
-                <a href="#"><i class="fas fa-cog"></i> Settings</a>
                 <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>
     </nav>
 
-    <div class="container">
+    <div class="container-layout">
         <aside class="sidebar">
-            <div class="user-profile">
-                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($userName ?? 'User'); ?>&background=0D8ABC&color=fff&size=64" alt="User" class="profile-image">
-                <div class="user-info">
-                    <h3 class="user-name"><?php echo htmlspecialchars($userName ?? 'User'); ?></h3>
-                    <p class="user-role"><?php echo htmlspecialchars($userRole ?? 'Staff'); ?></p>
-                </div>
-            </div>
-            
             <nav class="sidebar-menu">
                 <a href="modern_dashboard.php" class="menu-item">
                     <i class="fas fa-home"></i>
@@ -260,34 +201,34 @@ $userRole = $_SESSION['role'] ?? "Staff";
                     <span>Products</span>
                 </a>
                 <a href="categories.php" class="menu-item">
-                    <i class="fas fa-tags"></i>
+                    <i class="fas fa-list"></i>
                     <span>Categories</span>
                 </a>
                 <a href="units.php" class="menu-item active">
                     <i class="fas fa-ruler"></i>
                     <span>Units</span>
                 </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>Sales</span>
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-cash-register"></i>
-                    <span>Point of Sale</span>
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-credit-card"></i>
-                    <span>Credit Sales</span>
-                </a>
-                <a href="#" class="menu-item">
+                <a href="customers.php" class="menu-item">
                     <i class="fas fa-users"></i>
                     <span>Customers</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="sales.php" class="menu-item">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Sales</span>
+                </a>
+                <a href="credit_sales.php" class="menu-item">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Credit Sales</span>
+                </a>
+                <a href="pos.php" class="menu-item">
+                    <i class="fas fa-cash-register"></i>
+                    <span>Point of Sale</span>
+                </a>
+                <a href="reports.php" class="menu-item">
                     <i class="fas fa-chart-bar"></i>
                     <span>Reports</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="settings.php" class="menu-item">
                     <i class="fas fa-cog"></i>
                     <span>Settings</span>
                 </a>
@@ -299,262 +240,190 @@ $userRole = $_SESSION['role'] ?? "Staff";
         </aside>
 
         <main class="main-content">
-            <div class="page-header">
-                <h1>Units Management</h1>
-                <button class="btn-primary" id="addUnitBtn">
-                    <i class="fas fa-plus"></i> Add New Unit
-                </button>
-            </div>
+            <div class="content-section">
+                <div class="section-header">
+                    <h2>Units Management</h2>
+                    <button class="btn btn-primary" id="addUnitBtn">
+                        <i class="fas fa-plus"></i> Add Unit
+                    </button>
+                </div>
 
-            <table class="units-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Unit Name</th>
-                        <th>Symbol</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="unitsTableBody">
-                    <tr>
-                        <td colspan="4" style="text-align: center; padding: 40px;">Loading...</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div id="emptyState" class="empty-state" style="display: none;">
-                <i class="fas fa-inbox"></i>
-                <p>No units found. Create one to get started!</p>
+                <div id="unitsContainer">
+                    <div class="empty-state">
+                        <i class="fas fa-ruler"></i>
+                        <p>Loading units...</p>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
 
-    <!-- Add/Edit Unit Modal -->
     <div id="unitModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle">Add New Unit</h2>
-                <span class="close">&times;</span>
+                <h2 id="modalTitle">Add Unit</h2>
             </div>
             <form id="unitForm">
-                <input type="hidden" id="unitId" value="">
-                <div class="form-row">
+                <div class="modal-body">
+                    <input type="hidden" id="unitId">
                     <div class="form-group">
                         <label for="unitName">Unit Name *</label>
-                        <input type="text" id="unitName" required>
+                        <input type="text" id="unitName" placeholder="Enter unit name (e.g., Kilogram)" required>
                     </div>
                     <div class="form-group">
-                        <label for="unitSymbol">Symbol *</label>
-                        <input type="text" id="unitSymbol" required>
+                        <label for="unitAbbreviation">Abbreviation *</label>
+                        <input type="text" id="unitAbbreviation" placeholder="Enter abbreviation (e.g., kg)" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="unitDescription">Description</label>
+                        <textarea id="unitDescription" placeholder="Enter unit description"></textarea>
                     </div>
                 </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel" id="cancelBtn">Cancel</button>
-                    <button type="submit" class="btn-primary">Save Unit</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="closeModal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Unit</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
+        const modal = document.getElementById('unitModal');
         const addUnitBtn = document.getElementById('addUnitBtn');
-        const unitModal = document.getElementById('unitModal');
-        const closeBtn = document.querySelector('.close');
-        const cancelBtn = document.getElementById('cancelBtn');
+        const closeModal = document.getElementById('closeModal');
         const unitForm = document.getElementById('unitForm');
-        const modalTitle = document.getElementById('modalTitle');
-        const unitsTableBody = document.getElementById('unitsTableBody');
-        const emptyState = document.getElementById('emptyState');
-        const userMenu = document.getElementById('userMenu');
-        const userDropdown = document.getElementById('userDropdown');
 
-        // User menu functionality
-        userMenu.addEventListener('click', (e) => {
-            e.stopPropagation();
-            userDropdown.classList.toggle('show');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!userMenu.contains(e.target)) {
-                userDropdown.classList.remove('show');
-            }
-        });
-
-        // Load units on page load
-        document.addEventListener('DOMContentLoaded', loadUnits);
-
-        // Open modal for adding new unit
         addUnitBtn.addEventListener('click', () => {
+            document.getElementById('modalTitle').textContent = 'Add Unit';
             unitForm.reset();
             document.getElementById('unitId').value = '';
-            modalTitle.textContent = 'Add New Unit';
-            unitModal.style.display = 'flex';
-            document.getElementById('unitName').focus();
+            modal.classList.add('show');
         });
 
-        // Modal close handlers
-        closeBtn.addEventListener('click', () => {
-            unitModal.style.display = 'none';
+        closeModal.addEventListener('click', () => {
+            modal.classList.remove('show');
         });
 
-        cancelBtn.addEventListener('click', () => {
-            unitModal.style.display = 'none';
-        });
-
-        window.addEventListener('click', (event) => {
-            if (event.target === unitModal) {
-                unitModal.style.display = 'none';
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('show');
             }
         });
 
-        // Form submission
-        unitForm.addEventListener('submit', (e) => {
+        unitForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            saveUnit();
+            
+            const id = document.getElementById('unitId').value;
+            const name = document.getElementById('unitName').value;
+            const abbreviation = document.getElementById('unitAbbreviation').value;
+            const description = document.getElementById('unitDescription').value;
+            
+            const endpoint = id ? 'php/update_unit.php' : 'php/add_unit.php';
+            const body = new URLSearchParams({
+                name: name,
+                abbreviation: abbreviation,
+                description: description
+            });
+            
+            if (id) {
+                body.append('id', id);
+            }
+            
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: body
+                });
+                
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showSuccess(data.message);
+                    modal.classList.remove('show');
+                    loadUnits();
+                } else {
+                    showError(data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('An error occurred');
+            }
         });
 
-        // Load units from server
-        function loadUnits() {
-            fetch('php/get_units.php')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        displayUnits(data.data);
-                    } else {
-                        console.error('Error loading units:', data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading units:', error);
-                });
-        }
-
-        // Display units in table
-        function displayUnits(units) {
-            unitsTableBody.innerHTML = '';
-
-            if (units.length === 0) {
-                emptyState.style.display = 'block';
-                return;
-            }
-
-            emptyState.style.display = 'none';
-
-            units.forEach(unit => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${unit.id}</td>
-                    <td>${htmlEscape(unit.name)}</td>
-                    <td><strong>${htmlEscape(unit.symbol)}</strong></td>
-                    <td class="action-buttons">
-                        <button class="btn-edit" onclick="editUnit(${unit.id})" title="Edit Unit">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-delete" onclick="deleteUnit(${unit.id})" title="Delete Unit">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                unitsTableBody.appendChild(row);
-            });
-        }
-
-        // Save unit (add or update)
-        function saveUnit() {
-            const name = document.getElementById('unitName').value.trim();
-            const symbol = document.getElementById('unitSymbol').value.trim();
-            const unitId = document.getElementById('unitId').value;
-
-            if (!name || !symbol) {
-                alert('Unit name and symbol are required');
-                return;
-            }
-
-            const unitData = {
-                name: name,
-                symbol: symbol
-            };
-
-            const endpoint = unitId ? 'php/update_unit.php' : 'php/add_unit.php';
-
-            if (unitId) {
-                unitData.id = unitId;
-            }
-
-            const formData = new URLSearchParams();
-            for (const [key, value] of Object.entries(unitData)) {
-                formData.append(key, value);
-            }
-
-            fetch(endpoint, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    unitModal.style.display = 'none';
-                    loadUnits();
-                    alert(data.message);
+        async function loadUnits() {
+            try {
+                const response = await fetch('php/get_units.php');
+                const data = await response.json();
+                
+                const container = document.getElementById('unitsContainer');
+                
+                if (data.status === 'success' && data.data.length > 0) {
+                    let html = '<table class="units-table"><thead><tr><th>ID</th><th>Name</th><th>Abbreviation</th><th>Description</th><th>Created</th><th>Actions</th></tr></thead><tbody>';
+                    
+                    data.data.forEach(unit => {
+                        const createdDate = new Date(unit.created_at).toLocaleDateString();
+                        html += `<tr>
+                            <td>${unit.id}</td>
+                            <td>${unit.name}</td>
+                            <td>${unit.abbreviation}</td>
+                            <td>${unit.description || '-'}</td>
+                            <td>${createdDate}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-edit" onclick="editUnit(${unit.id}, '${unit.name}', '${unit.abbreviation}', '${(unit.description || '').replace(/'/g, "\\'")}')">Edit</button>
+                                    <button class="btn btn-sm btn-delete" onclick="deleteUnit(${unit.id})">Delete</button>
+                                </div>
+                            </td>
+                        </tr>`;
+                    });
+                    
+                    html += '</tbody></table>';
+                    container.innerHTML = html;
                 } else {
-                    alert('Error: ' + data.message);
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-ruler"></i><p>No units found. Add your first unit!</p></div>';
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while saving the unit');
-            });
-        }
-
-        // Edit unit
-        function editUnit(unitId) {
-            fetch('php/get_units.php')
-                .then(response => response.json())
-                .then(data => {
-                    const unit = data.data.find(u => u.id == unitId);
-                    if (unit) {
-                        document.getElementById('unitId').value = unit.id;
-                        document.getElementById('unitName').value = unit.name;
-                        document.getElementById('unitSymbol').value = unit.symbol;
-                        modalTitle.textContent = 'Edit Unit';
-                        unitModal.style.display = 'flex';
-                        document.getElementById('unitName').focus();
-                    }
-                });
-        }
-
-        // Delete unit
-        function deleteUnit(unitId) {
-            if (confirm('Are you sure you want to delete this unit?')) {
-                const formData = new URLSearchParams();
-                formData.append('id', unitId);
-
-                fetch('php/delete_unit.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        loadUnits();
-                        alert(data.message);
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while deleting the unit');
-                });
+            } catch (error) {
+                console.error('Error loading units:', error);
+                document.getElementById('unitsContainer').innerHTML = '<div class="empty-state"><p>Error loading units</p></div>';
             }
         }
 
-        // Utility function to escape HTML
-        function htmlEscape(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        function editUnit(id, name, abbreviation, description) {
+            document.getElementById('modalTitle').textContent = 'Edit Unit';
+            document.getElementById('unitId').value = id;
+            document.getElementById('unitName').value = name;
+            document.getElementById('unitAbbreviation').value = abbreviation;
+            document.getElementById('unitDescription').value = description;
+            modal.classList.add('show');
         }
+
+        async function deleteUnit(id) {
+            if (!confirm('Are you sure you want to delete this unit?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('php/delete_unit.php', {
+                    method: 'POST',
+                    body: new URLSearchParams({ id: id })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showSuccess(data.message);
+                    loadUnits();
+                } else {
+                    showError(data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('An error occurred');
+            }
+        }
+
+        loadUnits();
     </script>
+    <script src="js/toast.js"></script>
 </body>
 </html>

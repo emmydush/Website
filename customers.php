@@ -1,5 +1,7 @@
 <?php
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+ini_set('display_errors', 1);
+
 session_start();
 require_once 'php/db_connect.php';
 
@@ -16,205 +18,171 @@ $userRole = $_SESSION['role'] ?? "Staff";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customers - Inventory Management System</title>
+    <title>Customers - Inventory Management</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/modern_dashboard.css">
-    <link rel="stylesheet" href="css/responsive.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <link rel="stylesheet" href="css/toast.css">
     <style>
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-        }
-        
-        .customers-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-        }
-        
-        .customers-table th,
-        .customers-table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .customers-table th {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: white;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 14px;
-        }
-        
-        .customers-table tr:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .btn-edit, .btn-delete {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .btn-edit {
-            background-color: #ffc107;
-            color: #212529;
-        }
-        
-        .btn-edit:hover {
-            background-color: #e0a800;
-        }
-        
-        .btn-delete {
-            background-color: #dc3545;
-            color: white;
-        }
-        
-        .btn-delete:hover {
-            background-color: #c82333;
-        }
-        
         .modal {
             display: none;
             position: fixed;
-            top: 0;
+            z-index: 1000;
             left: 0;
+            top: 0;
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            overflow-y: auto;
-            padding: 20px;
         }
-        
-        .modal-content {
-            background: white;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 550px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-        
-        .modal-header {
+        .modal.show {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+            justify-content: center;
         }
-        
+        .modal-content {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 1rem;
+        }
         .modal-header h2 {
             margin: 0;
+            font-size: 1.5rem;
             color: #333;
-            font-size: 24px;
         }
-        
-        .close {
-            font-size: 28px;
-            cursor: pointer;
-            color: #999;
+        .modal-body {
+            margin-bottom: 1.5rem;
         }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
+            gap: 1rem;
+            margin-bottom: 1rem;
         }
-        
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+        .form-group {
+            margin-bottom: 0;
+        }
         .form-group label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #777;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
         }
-        
         .form-group input,
+        .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 12px 15px;
+            padding: 0.75rem;
             border: 1px solid #ddd;
             border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 16px;
+            font-family: inherit;
         }
-        
-        .form-group input:focus,
-        .form-group textarea:focus {
-            border-color: #6a11cb;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
         }
-        
-        .form-actions {
+        .modal-footer {
             display: flex;
+            gap: 1rem;
             justify-content: flex-end;
-            gap: 12px;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
         }
-        
-        .btn-cancel {
-            background-color: #e0e0e0;
-            color: #333;
+        .btn {
+            padding: 0.75rem 1.5rem;
             border: none;
-            padding: 10px 20px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
+            transition: all 0.3s;
         }
-        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+        .btn-edit {
+            background: #4CAF50;
+            color: white;
+        }
+        .btn-delete {
+            background: #f44336;
+            color: white;
+        }
+        .customers-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+        }
+        .customers-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        .customers-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .customers-table tr:hover {
+            background: #f9f9f9;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .content-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin: 2rem 0;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .section-header h2 {
+            margin: 0;
+            color: #333;
+            font-size: 1.75rem;
+        }
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 3rem;
             color: #999;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
         }
     </style>
 </head>
@@ -225,28 +193,17 @@ $userRole = $_SESSION['role'] ?? "Staff";
         </div>
         <div class="nav-right">
             <div class="user-menu" id="userMenu">
-                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($userName ?? 'User'); ?>&background=0D8ABC&color=fff" alt="User" class="user-avatar">
-                <span class="user-name"><?php echo htmlspecialchars($userName ?? 'User'); ?></span>
-                <i class="fas fa-chevron-down"></i>
+                <i class="fas fa-user-circle"></i>
+                <span><?php echo htmlspecialchars($userName); ?></span>
             </div>
             <div class="user-dropdown" id="userDropdown">
-                <a href="#"><i class="fas fa-user"></i> Profile</a>
-                <a href="#"><i class="fas fa-cog"></i> Settings</a>
                 <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>
     </nav>
 
-    <div class="container">
+    <div class="container-layout">
         <aside class="sidebar">
-            <div class="user-profile">
-                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($userName ?? 'User'); ?>&background=0D8ABC&color=fff&size=64" alt="User" class="profile-image">
-                <div class="user-info">
-                    <h3 class="user-name"><?php echo htmlspecialchars($userName ?? 'User'); ?></h3>
-                    <p class="user-role"><?php echo htmlspecialchars($userRole ?? 'Staff'); ?></p>
-                </div>
-            </div>
-            
             <nav class="sidebar-menu">
                 <a href="modern_dashboard.php" class="menu-item">
                     <i class="fas fa-home"></i>
@@ -257,34 +214,34 @@ $userRole = $_SESSION['role'] ?? "Staff";
                     <span>Products</span>
                 </a>
                 <a href="categories.php" class="menu-item">
-                    <i class="fas fa-tags"></i>
+                    <i class="fas fa-list"></i>
                     <span>Categories</span>
                 </a>
                 <a href="units.php" class="menu-item">
                     <i class="fas fa-ruler"></i>
                     <span>Units</span>
                 </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>Sales</span>
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-cash-register"></i>
-                    <span>Point of Sale</span>
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-credit-card"></i>
-                    <span>Credit Sales</span>
-                </a>
                 <a href="customers.php" class="menu-item active">
                     <i class="fas fa-users"></i>
                     <span>Customers</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="sales.php" class="menu-item">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Sales</span>
+                </a>
+                <a href="credit_sales.php" class="menu-item">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Credit Sales</span>
+                </a>
+                <a href="pos.php" class="menu-item">
+                    <i class="fas fa-cash-register"></i>
+                    <span>Point of Sale</span>
+                </a>
+                <a href="reports.php" class="menu-item">
                     <i class="fas fa-chart-bar"></i>
                     <span>Reports</span>
                 </a>
-                <a href="#" class="menu-item">
+                <a href="settings.php" class="menu-item">
                     <i class="fas fa-cog"></i>
                     <span>Settings</span>
                 </a>
@@ -296,275 +253,245 @@ $userRole = $_SESSION['role'] ?? "Staff";
         </aside>
 
         <main class="main-content">
-            <div class="page-header">
-                <h1>Customers Management</h1>
-                <button class="btn-primary" id="addCustomerBtn">
-                    <i class="fas fa-plus"></i> Add New Customer
-                </button>
-            </div>
+            <div class="content-section">
+                <div class="section-header">
+                    <h2>Customers Management</h2>
+                    <button class="btn btn-primary" id="addCustomerBtn">
+                        <i class="fas fa-plus"></i> Add Customer
+                    </button>
+                </div>
 
-            <table class="customers-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Total Purchases</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="customersTableBody">
-                    <tr>
-                        <td colspan="5" style="text-align: center; padding: 40px;">Loading...</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div id="emptyState" class="empty-state" style="display: none;">
-                <i class="fas fa-inbox"></i>
-                <p>No customers found. Add one to get started!</p>
+                <div id="customersContainer">
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <p>Loading customers...</p>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
 
-    <!-- Add/Edit Customer Modal -->
     <div id="customerModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle">Add New Customer</h2>
-                <span class="close">&times;</span>
+                <h2 id="modalTitle">Add Customer</h2>
             </div>
             <form id="customerForm">
-                <input type="hidden" id="customerId" value="">
-                <div class="form-group">
-                    <label for="customerName">Customer Name *</label>
-                    <input type="text" id="customerName" required>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="customerEmail">Email</label>
-                        <input type="email" id="customerEmail">
+                <div class="modal-body">
+                    <input type="hidden" id="customerId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customerName">Customer Name *</label>
+                            <input type="text" id="customerName" placeholder="Enter customer name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="customerType">Customer Type *</label>
+                            <select id="customerType" required>
+                                <option value="retail">Retail</option>
+                                <option value="wholesale">Wholesale</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="customerPhone">Phone</label>
-                        <input type="tel" id="customerPhone">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customerEmail">Email</label>
+                            <input type="email" id="customerEmail" placeholder="Enter email">
+                        </div>
+                        <div class="form-group">
+                            <label for="customerPhone">Phone</label>
+                            <input type="tel" id="customerPhone" placeholder="Enter phone number">
+                        </div>
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label for="customerAddress">Address</label>
+                            <input type="text" id="customerAddress" placeholder="Enter address">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customerCity">City</label>
+                            <input type="text" id="customerCity" placeholder="Enter city">
+                        </div>
+                        <div class="form-group">
+                            <label for="customerState">State</label>
+                            <input type="text" id="customerState" placeholder="Enter state">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customerPostalCode">Postal Code</label>
+                            <input type="text" id="customerPostalCode" placeholder="Enter postal code">
+                        </div>
+                        <div class="form-group">
+                            <label for="customerCountry">Country</label>
+                            <input type="text" id="customerCountry" placeholder="Enter country">
+                        </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="customerAddress">Address</label>
-                    <textarea id="customerAddress" rows="2" placeholder="Optional: Customer address"></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel" id="cancelBtn">Cancel</button>
-                    <button type="submit" class="btn-primary">Save Customer</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="closeModal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Customer</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
+        const modal = document.getElementById('customerModal');
         const addCustomerBtn = document.getElementById('addCustomerBtn');
-        const customerModal = document.getElementById('customerModal');
-        const closeBtn = document.querySelector('.close');
-        const cancelBtn = document.getElementById('cancelBtn');
+        const closeModal = document.getElementById('closeModal');
         const customerForm = document.getElementById('customerForm');
-        const modalTitle = document.getElementById('modalTitle');
-        const customersTableBody = document.getElementById('customersTableBody');
-        const emptyState = document.getElementById('emptyState');
-        const userMenu = document.getElementById('userMenu');
-        const userDropdown = document.getElementById('userDropdown');
 
-        // User menu functionality
-        userMenu.addEventListener('click', (e) => {
-            e.stopPropagation();
-            userDropdown.classList.toggle('show');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!userMenu.contains(e.target)) {
-                userDropdown.classList.remove('show');
-            }
-        });
-
-        // Load customers on page load
-        document.addEventListener('DOMContentLoaded', loadCustomers);
-
-        // Open modal for adding new customer
         addCustomerBtn.addEventListener('click', () => {
+            document.getElementById('modalTitle').textContent = 'Add Customer';
             customerForm.reset();
             document.getElementById('customerId').value = '';
-            modalTitle.textContent = 'Add New Customer';
-            customerModal.style.display = 'flex';
-            document.getElementById('customerName').focus();
+            modal.classList.add('show');
         });
 
-        // Modal close handlers
-        closeBtn.addEventListener('click', () => {
-            customerModal.style.display = 'none';
+        closeModal.addEventListener('click', () => {
+            modal.classList.remove('show');
         });
 
-        cancelBtn.addEventListener('click', () => {
-            customerModal.style.display = 'none';
-        });
-
-        window.addEventListener('click', (event) => {
-            if (event.target === customerModal) {
-                customerModal.style.display = 'none';
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('show');
             }
         });
 
-        // Form submission
-        customerForm.addEventListener('submit', (e) => {
+        customerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            saveCustomer();
+            
+            const id = document.getElementById('customerId').value;
+            const data = {
+                name: document.getElementById('customerName').value,
+                email: document.getElementById('customerEmail').value,
+                phone: document.getElementById('customerPhone').value,
+                address: document.getElementById('customerAddress').value,
+                city: document.getElementById('customerCity').value,
+                state: document.getElementById('customerState').value,
+                postal_code: document.getElementById('customerPostalCode').value,
+                country: document.getElementById('customerCountry').value,
+                customer_type: document.getElementById('customerType').value
+            };
+            
+            if (id) {
+                data.id = id;
+                data.status = 'active';
+            }
+            
+            const endpoint = id ? 'php/update_customer.php' : 'php/add_customer.php';
+            const body = new URLSearchParams(data);
+            
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: body
+                });
+                
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    showSuccess(result.message);
+                    modal.classList.remove('show');
+                    loadCustomers();
+                } else {
+                    showError(result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('An error occurred');
+            }
         });
 
-        // Load customers from server
-        function loadCustomers() {
-            fetch('php/get_customers.php')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        displayCustomers(data.data);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading customers:', error);
-                });
-        }
-
-        // Display customers in table
-        function displayCustomers(customers) {
-            customersTableBody.innerHTML = '';
-
-            if (customers.length === 0) {
-                emptyState.style.display = 'block';
-                return;
-            }
-
-            emptyState.style.display = 'none';
-
-            customers.forEach(customer => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${htmlEscape(customer.name)}</td>
-                    <td>${htmlEscape(customer.email || '-')}</td>
-                    <td>${htmlEscape(customer.phone || '-')}</td>
-                    <td>${customer.total_purchases || 0}</td>
-                    <td class="action-buttons">
-                        <button class="btn-edit" onclick="editCustomer(${customer.id})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-delete" onclick="deleteCustomer(${customer.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                customersTableBody.appendChild(row);
-            });
-        }
-
-        // Save customer
-        function saveCustomer() {
-            const name = document.getElementById('customerName').value.trim();
-            const email = document.getElementById('customerEmail').value.trim();
-            const phone = document.getElementById('customerPhone').value.trim();
-            const address = document.getElementById('customerAddress').value.trim();
-            const customerId = document.getElementById('customerId').value;
-
-            if (!name) {
-                alert('Customer name is required');
-                return;
-            }
-
-            const customerData = {
-                name: name,
-                email: email,
-                phone: phone,
-                address: address
-            };
-
-            const endpoint = customerId ? 'php/update_customer.php' : 'php/add_customer.php';
-
-            if (customerId) {
-                customerData.id = customerId;
-            }
-
-            const formData = new URLSearchParams();
-            for (const [key, value] of Object.entries(customerData)) {
-                formData.append(key, value);
-            }
-
-            fetch(endpoint, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    customerModal.style.display = 'none';
-                    loadCustomers();
-                    alert(data.message);
+        async function loadCustomers() {
+            try {
+                const response = await fetch('php/get_customers.php');
+                const data = await response.json();
+                
+                const container = document.getElementById('customersContainer');
+                
+                if (data.status === 'success' && data.data.length > 0) {
+                    let html = '<table class="customers-table"><thead><tr><th>ID</th><th>Name</th><th>Type</th><th>Email</th><th>Phone</th><th>City</th><th>Actions</th></tr></thead><tbody>';
+                    
+                    data.data.forEach(customer => {
+                        html += `<tr>
+                            <td>${customer.id}</td>
+                            <td>${customer.name}</td>
+                            <td><span style="background: ${customer.customer_type === 'retail' ? '#e3f2fd' : '#f3e5f5'}; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.85rem;">${customer.customer_type}</span></td>
+                            <td>${customer.email || '-'}</td>
+                            <td>${customer.phone || '-'}</td>
+                            <td>${customer.city || '-'}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-edit" onclick="editCustomer(${customer.id})">Edit</button>
+                                    <button class="btn btn-sm btn-delete" onclick="deleteCustomer(${customer.id})">Delete</button>
+                                </div>
+                            </td>
+                        </tr>`;
+                    });
+                    
+                    html += '</tbody></table>';
+                    container.innerHTML = html;
                 } else {
-                    alert('Error: ' + data.message);
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><p>No customers found. Add your first customer!</p></div>';
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred');
-            });
+            } catch (error) {
+                console.error('Error loading customers:', error);
+                document.getElementById('customersContainer').innerHTML = '<div class="empty-state"><p>Error loading customers</p></div>';
+            }
         }
 
-        // Edit customer
-        function editCustomer(customerId) {
-            fetch('php/get_customers.php')
-                .then(response => response.json())
+        function editCustomer(id) {
+            fetch(`php/get_customers.php`)
+                .then(r => r.json())
                 .then(data => {
-                    const customer = data.data.find(c => c.id == customerId);
+                    const customer = data.data.find(c => c.id === id);
                     if (customer) {
+                        document.getElementById('modalTitle').textContent = 'Edit Customer';
                         document.getElementById('customerId').value = customer.id;
                         document.getElementById('customerName').value = customer.name;
                         document.getElementById('customerEmail').value = customer.email || '';
                         document.getElementById('customerPhone').value = customer.phone || '';
+                        document.getElementById('customerType').value = customer.customer_type;
                         document.getElementById('customerAddress').value = customer.address || '';
-                        modalTitle.textContent = 'Edit Customer';
-                        customerModal.style.display = 'flex';
+                        document.getElementById('customerCity').value = customer.city || '';
+                        document.getElementById('customerState').value = customer.state || '';
+                        document.getElementById('customerPostalCode').value = customer.postal_code || '';
+                        document.getElementById('customerCountry').value = customer.country || '';
+                        modal.classList.add('show');
                     }
                 });
         }
 
-        // Delete customer
-        function deleteCustomer(customerId) {
-            if (confirm('Are you sure you want to delete this customer?')) {
-                const formData = new URLSearchParams();
-                formData.append('id', customerId);
+        async function deleteCustomer(id) {
+            if (!confirm('Are you sure you want to delete this customer?')) {
+                return;
+            }
 
-                fetch('php/delete_customer.php', {
+            try {
+                const response = await fetch('php/delete_customer.php', {
                     method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        loadCustomers();
-                        alert(data.message);
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred');
+                    body: new URLSearchParams({ id: id })
                 });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showSuccess(data.message);
+                    loadCustomers();
+                } else {
+                    showError(data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('An error occurred');
             }
         }
 
-        // Utility function
-        function htmlEscape(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+        loadCustomers();
     </script>
+    <script src="js/toast.js"></script>
 </body>
 </html>

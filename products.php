@@ -50,8 +50,6 @@ try {
     <title>Products - Inventory Management System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/modern_dashboard.css">
-    <link rel="stylesheet" href="css/responsive.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <style>
         .products-header {
             display: flex;
@@ -259,6 +257,26 @@ try {
             box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
         }
         
+        .form-text {
+            display: block;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        
+        .form-text.text-muted {
+            color: #6c757d;
+        }
+        
+        .form-text.text-info {
+            color: #17a2b8;
+            font-weight: 500;
+        }
+        
+        .scanner-active {
+            border-color: #28a745 !important;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25) !important;
+        }
+        
         .form-actions {
             display: flex;
             justify-content: flex-end;
@@ -342,6 +360,23 @@ try {
             transform: translateY(-2px);
         }
         
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+
         .table-container {
             overflow-x: auto;
             border-radius: 10px;
@@ -567,6 +602,12 @@ try {
                     <div class="form-group form-half">
                         <label for="productBarcode">Barcode</label>
                         <input type="text" id="productBarcode">
+                        <small class="form-text text-muted">Supports barcode scanners - press Enter after scanning to save</small>
+                        <small class="form-text text-info">Shortcut: Press Ctrl+B to focus on barcode field</small>
+                        <small class="form-text text-muted" id="scannerStatus" style="display: none; color: #28a745;">Scanner ready - scan barcode now</small>
+                        <button type="button" class="btn-secondary" id="cameraScanBtn" style="margin-top: 10px;">
+                            <i class="fas fa-camera"></i> Scan with Camera
+                        </button>
                     </div>
                 </div>
                 <div class="form-group">
@@ -582,6 +623,7 @@ try {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
     <script src="js/modern_dashboard.js"></script>
     <script>
         // DOM Elements
@@ -594,6 +636,7 @@ try {
         const productsTableBody = document.getElementById('productsTableBody');
         const searchInput = document.getElementById('searchInput');
         const searchBtn = document.getElementById('searchBtn');
+        const cameraScanBtn = document.getElementById('cameraScanBtn');
 
         // Load products when page loads
         document.addEventListener('DOMContentLoaded', loadProducts);
@@ -626,16 +669,16 @@ try {
             }
         });
 
+        // Camera scan button event
+        cameraScanBtn.addEventListener('click', startCameraScan);
+
         // Handle form submission
         productForm.addEventListener('submit', (e) => {
             e.preventDefault();
             saveProduct();
         });
 
-        // Barcode scanner support - detect when barcode is scanned
-        let barcodeBuffer = '';
-        let barcodeTimeout;
-
+        // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             // Ctrl+B to focus on barcode field when modal is open
             if (e.ctrlKey && e.key === 'b' && productModal.style.display === 'flex') {
@@ -681,6 +724,10 @@ try {
                 }, 100);
             }
         });
+
+        // Barcode scanner support - detect when barcode is scanned
+        let barcodeBuffer = '';
+        let barcodeTimeout;
 
         // Special handling for barcode input in the barcode field
         const barcodeField = document.getElementById('productBarcode');
@@ -747,121 +794,6 @@ try {
                 loadProducts(searchInput.value);
             }
         });
-
-        // Camera scan button event
-        cameraScanBtn.addEventListener('click', startCameraScan);
-
-        // Start camera-based barcode scanning
-        function startCameraScan() {
-            // Check if the browser supports the necessary APIs
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert('Your browser does not support camera access. Please try Chrome, Firefox, or Edge.');
-                return;
-            }
-
-            // Create a modal for the camera scanner
-            const scannerModal = document.createElement('div');
-            scannerModal.id = 'cameraScannerModal';
-            scannerModal.className = 'modal';
-            scannerModal.style.display = 'flex';
-            scannerModal.innerHTML = `
-                <div class="modal-content" style="width: 90%; max-width: 800px; padding: 20px;">
-                    <div class="modal-header">
-                        <h2>Scan Barcode</h2>
-                        <span class="close" id="scannerClose">&times;</span>
-                    </div>
-                    <div style="text-align: center; margin: 20px 0;">
-                        <div id="scannerVideoContainer" style="position: relative; display: inline-block; width: 100%; max-width: 500px; height: 300px; border: 2px solid #ddd; border-radius: 10px; overflow: hidden;">
-                            <!-- QuaggaJS will insert video and canvas elements here -->
-                        </div>
-                        <div id="scannerMessage" style="margin-top: 15px; font-size: 18px; font-weight: bold;">
-                            Initializing camera...
-                        </div>
-                        <button id="stopScannerBtn" class="btn-cancel" style="margin-top: 15px;">Cancel Scan</button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(scannerModal);
-            
-            const scannerClose = document.getElementById('scannerClose');
-            const stopScannerBtn = document.getElementById('stopScannerBtn');
-            const scannerMessage = document.getElementById('scannerMessage');
-            
-            // Close scanner modal
-            const closeScanner = () => {
-                // Stop Quagga if it's running
-                if (Quagga && typeof Quagga.stop === 'function') {
-                    Quagga.stop();
-                }
-                
-                scannerModal.remove();
-            };
-            
-            scannerClose.addEventListener('click', closeScanner);
-            stopScannerBtn.addEventListener('click', closeScanner);
-            
-            // Close when clicking outside
-            scannerModal.addEventListener('click', (e) => {
-                if (e.target === scannerModal) {
-                    closeScanner();
-                }
-            });
-            
-            // Initialize QuaggaJS for barcode scanning
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: document.querySelector("#scannerVideoContainer"),
-                    constraints: {
-                        width: 640,
-                        height: 480,
-                        facingMode: "environment" // Use rear camera if available
-                    }
-                },
-                decoder: {
-                    readers: [
-                        "code_128_reader",
-                        "ean_reader",
-                        "ean_8_reader",
-                        "code_39_reader",
-                        "code_39_vin_reader",
-                        "codabar_reader",
-                        "upc_reader",
-                        "upc_e_reader",
-                        "i2of5_reader"
-                    ]
-                }
-            }, function(err) {
-                if (err) {
-                    console.error('QuaggaJS initialization error:', err);
-                    scannerMessage.innerHTML = '<span style="color: #dc3545;">Error initializing scanner: ' + err.message + '</span>';
-                    return;
-                }
-                
-                scannerMessage.innerHTML = '<span style="color: #ffc107;">Camera active - Point at barcode</span>';
-                Quagga.start();
-            });
-            
-            // When a barcode is detected
-            Quagga.onDetected(function(data) {
-                const code = data.codeResult.code;
-                scannerMessage.innerHTML = `<span style="color: #28a745;">Scanned: ${code}</span>`;
-                
-                // Fill the barcode field in the main form
-                document.getElementById('productBarcode').value = code;
-                document.getElementById('productBarcode').classList.add('scanner-active');
-                setTimeout(() => {
-                    document.getElementById('productBarcode').classList.remove('scanner-active');
-                }, 1000);
-                
-                // Stop scanning and close modal
-                setTimeout(() => {
-                    closeScanner();
-                }, 1500);
-            });
-        }
 
         // Load products from server
         function loadProducts(searchTerm = '') {
@@ -1116,8 +1048,9 @@ try {
                         <span class="close" id="scannerClose">&times;</span>
                     </div>
                     <div style="text-align: center; margin: 20px 0;">
-                        <div id="scannerVideoContainer" style="position: relative; display: inline-block; width: 100%; max-width: 500px; height: 300px; border: 2px solid #ddd; border-radius: 10px; overflow: hidden;">
-                            <!-- QuaggaJS will insert video and canvas elements here -->
+                        <div id="scannerVideoContainer" style="position: relative; display: inline-block; width: 100%; max-width: 500px;">
+                            <video id="scannerVideo" style="width: 100%; border: 2px solid #ddd; border-radius: 10px;"></video>
+                            <canvas id="scannerCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
                         </div>
                         <div id="scannerMessage" style="margin-top: 15px; font-size: 18px; font-weight: bold;">
                             Initializing camera...
@@ -1131,13 +1064,21 @@ try {
             
             const scannerClose = document.getElementById('scannerClose');
             const stopScannerBtn = document.getElementById('stopScannerBtn');
+            const scannerVideo = document.getElementById('scannerVideo');
             const scannerMessage = document.getElementById('scannerMessage');
+            
+            let stream = null;
             
             // Close scanner modal
             const closeScanner = () => {
                 // Stop Quagga if it's running
                 if (Quagga && typeof Quagga.stop === 'function') {
                     Quagga.stop();
+                }
+                
+                // Stop camera stream
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
                 }
                 
                 scannerModal.remove();
@@ -1207,3 +1148,7 @@ try {
                 }, 1500);
             });
         }
+
+    </script>
+</body>
+</html>

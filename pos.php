@@ -1,5 +1,7 @@
 <?php
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+ini_set('display_errors', 1);
+
 session_start();
 require_once 'php/db_connect.php';
 
@@ -16,221 +18,310 @@ $userRole = $_SESSION['role'] ?? "Staff";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Point of Sale - Inventory Management System</title>
+    <title>Point of Sale - Inventory Management</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/modern_dashboard.css">
-    <link rel="stylesheet" href="css/responsive.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <link rel="stylesheet" href="css/toast.css">
     <style>
         .pos-container {
             display: grid;
-            grid-template-columns: 1.5fr 1fr;
-            gap: 20px;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
         }
-        
-        .pos-section {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .search-box {
-            margin-bottom: 20px;
-        }
-        
-        .search-box input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-        }
-        
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-        
-        .product-card {
-            padding: 12px;
-            border: 2px solid #eee;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .product-card:hover {
-            border-color: #6a11cb;
-            background-color: #f0f0f0;
-        }
-        
-        .product-name {
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-        }
-        
-        .product-price {
-            color: #6a11cb;
-            font-weight: 600;
-            margin-top: 5px;
-        }
-        
-        .cart-item {
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .item-details {
-            flex: 1;
-        }
-        
-        .item-name {
-            font-weight: 600;
-            font-size: 14px;
-        }
-        
-        .item-qty {
-            color: #777;
-            font-size: 12px;
-            margin-top: 3px;
-        }
-        
-        .item-price {
-            font-weight: 600;
-            color: #6a11cb;
-        }
-        
-        .remove-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        
-        .cart-summary {
-            background: #f0f0f0;
-            padding: 15px;
-            border-radius: 6px;
-            margin-top: 20px;
-        }
-        
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        
-        .summary-row.total {
-            font-size: 18px;
-            font-weight: 600;
-            color: #6a11cb;
-            border-top: 1px solid #ddd;
-            padding-top: 8px;
-            margin-top: 8px;
-        }
-        
-        .btn-checkout {
-            width: 100%;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        
-        .btn-checkout:hover {
-            opacity: 0.9;
-        }
-        
-        .btn-checkout:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        @media (max-width: 1024px) {
+        @media (max-width: 1200px) {
             .pos-container {
                 grid-template-columns: 1fr;
             }
+        }
+        .pos-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .pos-section h2 {
+            margin: 0 0 1.5rem 0;
+            color: #333;
+            font-size: 1.5rem;
+        }
+        .search-box {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        .search-box button {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .product-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .product-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .product-card:hover {
+            background: #f5f5f5;
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        .product-card h4 {
+            margin: 0 0 0.5rem 0;
+            color: #333;
+            font-size: 0.9rem;
+        }
+        .product-price {
+            font-size: 1.25rem;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .product-stock {
+            font-size: 0.85rem;
+            color: #999;
+        }
+        .cart-items {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 1.5rem;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            gap: 1rem;
+        }
+        .cart-item-details {
+            flex: 1;
+        }
+        .cart-item-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .cart-item-qty {
+            font-size: 0.85rem;
+            color: #999;
+        }
+        .cart-item-total {
+            font-weight: 600;
+            min-width: 80px;
+            text-align: right;
+        }
+        .qty-input {
+            width: 50px;
+            padding: 0.4rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .remove-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .cart-summary {
+            background: #f5f5f5;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+        .summary-row.total {
+            border-top: 2px solid #ddd;
+            padding-top: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .payment-method {
+            margin-bottom: 1.5rem;
+        }
+        .payment-method label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+        .payment-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+        .payment-option {
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .payment-option.active {
+            border-color: #667eea;
+            background: #f0f1ff;
+        }
+        .btn-checkout {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-checkout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+        .btn-clear {
+            width: 100%;
+            padding: 0.75rem;
+            background: #f0f0f0;
+            color: #333;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 2rem;
+        }
+        .empty-message i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+            opacity: 0.5;
         }
     </style>
 </head>
 <body>
     <nav class="top-nav">
         <div class="nav-left">
-            <div class="logo">InventoryPro POS</div>
+            <div class="logo">InventoryPro</div>
         </div>
         <div class="nav-right">
             <div class="user-menu" id="userMenu">
-                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($userName ?? 'User'); ?>&background=0D8ABC&color=fff" alt="User" class="user-avatar">
-                <span class="user-name"><?php echo htmlspecialchars($userName ?? 'User'); ?></span>
+                <i class="fas fa-user-circle"></i>
+                <span><?php echo htmlspecialchars($userName); ?></span>
+            </div>
+            <div class="user-dropdown" id="userDropdown">
+                <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>
     </nav>
 
-    <div class="container">
+    <div class="container-layout">
         <aside class="sidebar">
-            <div class="user-profile">
-                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($userName ?? 'User'); ?>&background=0D8ABC&color=fff&size=64" alt="User" class="profile-image">
-                <div class="user-info">
-                    <h3 class="user-name"><?php echo htmlspecialchars($userName ?? 'User'); ?></h3>
-                    <p class="user-role"><?php echo htmlspecialchars($userRole ?? 'Staff'); ?></p>
-                </div>
-            </div>
-            
             <nav class="sidebar-menu">
-                <a href="modern_dashboard.php" class="menu-item"><i class="fas fa-home"></i><span>Home</span></a>
-                <a href="products.php" class="menu-item"><i class="fas fa-box"></i><span>Products</span></a>
-                <a href="categories.php" class="menu-item"><i class="fas fa-tags"></i><span>Categories</span></a>
-                <a href="units.php" class="menu-item"><i class="fas fa-ruler"></i><span>Units</span></a>
-                <a href="sales.php" class="menu-item"><i class="fas fa-shopping-cart"></i><span>Sales</span></a>
-                <a href="pos.php" class="menu-item active"><i class="fas fa-cash-register"></i><span>Point of Sale</span></a>
-                <a href="credit_sales.php" class="menu-item"><i class="fas fa-credit-card"></i><span>Credit Sales</span></a>
-                <a href="customers.php" class="menu-item"><i class="fas fa-users"></i><span>Customers</span></a>
-                <a href="reports.php" class="menu-item"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
-                <a href="settings.php" class="menu-item"><i class="fas fa-cog"></i><span>Settings</span></a>
-                <a href="logout.php" class="menu-item logout"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+                <a href="modern_dashboard.php" class="menu-item">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="products.php" class="menu-item">
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                </a>
+                <a href="categories.php" class="menu-item">
+                    <i class="fas fa-list"></i>
+                    <span>Categories</span>
+                </a>
+                <a href="units.php" class="menu-item">
+                    <i class="fas fa-ruler"></i>
+                    <span>Units</span>
+                </a>
+                <a href="customers.php" class="menu-item">
+                    <i class="fas fa-users"></i>
+                    <span>Customers</span>
+                </a>
+                <a href="sales.php" class="menu-item">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Sales</span>
+                </a>
+                <a href="credit_sales.php" class="menu-item">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Credit Sales</span>
+                </a>
+                <a href="pos.php" class="menu-item active">
+                    <i class="fas fa-cash-register"></i>
+                    <span>Point of Sale</span>
+                </a>
+                <a href="reports.php" class="menu-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="settings.php" class="menu-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="logout.php" class="menu-item logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
             </nav>
         </aside>
 
         <main class="main-content">
-            <h1>Point of Sale System</h1>
-            
             <div class="pos-container">
-                <!-- Products Section -->
                 <div class="pos-section">
-                    <h2>Products</h2>
+                    <h2>Available Products</h2>
                     <div class="search-box">
-                        <input type="text" id="searchInput" placeholder="Search products...">
+                        <input type="text" id="productSearch" placeholder="Search products...">
+                        <button onclick="searchProducts()"><i class="fas fa-search"></i></button>
                     </div>
-                    <div class="product-grid" id="productGrid">
-                        <div style="text-align: center; padding: 20px; color: #999;">Loading products...</div>
+                    <div class="product-list" id="productList">
+                        <div class="empty-message">
+                            <i class="fas fa-box"></i>
+                            <p>Loading products...</p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Cart Section -->
                 <div class="pos-section">
                     <h2>Shopping Cart</h2>
-                    <div id="cartItems" style="min-height: 300px;">
-                        <p style="color: #999; text-align: center; padding: 40px 0;">Cart is empty</p>
+                    <div class="cart-items" id="cartItems">
+                        <div class="empty-message">
+                            <i class="fas fa-shopping-cart"></i>
+                            <p>Cart is empty</p>
+                        </div>
                     </div>
+
                     <div class="cart-summary">
                         <div class="summary-row">
                             <span>Subtotal:</span>
@@ -245,101 +336,199 @@ $userRole = $_SESSION['role'] ?? "Staff";
                             <span id="total">$0.00</span>
                         </div>
                     </div>
-                    <button class="btn-checkout" id="checkoutBtn" disabled>Complete Sale</button>
+
+                    <div class="payment-method">
+                        <label>Payment Method</label>
+                        <div class="payment-options">
+                            <div class="payment-option active" onclick="setPayment('cash')">
+                                <i class="fas fa-money-bill"></i> Cash
+                            </div>
+                            <div class="payment-option" onclick="setPayment('card')">
+                                <i class="fas fa-credit-card"></i> Card
+                            </div>
+                            <div class="payment-option" onclick="setPayment('check')">
+                                <i class="fas fa-check"></i> Check
+                            </div>
+                            <div class="payment-option" onclick="setPayment('transfer')">
+                                <i class="fas fa-exchange-alt"></i> Transfer
+                            </div>
+                        </div>
+                        <input type="hidden" id="paymentMethod" value="cash">
+                    </div>
+
+                    <button class="btn-checkout" onclick="checkout()">
+                        <i class="fas fa-check-circle"></i> Complete Sale
+                    </button>
+                    <button class="btn-clear" onclick="clearCart()">Clear Cart</button>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
-        let cart = [];
-        const productGrid = document.getElementById('productGrid');
-        const cartItems = document.getElementById('cartItems');
-        const searchInput = document.getElementById('searchInput');
-        const checkoutBtn = document.getElementById('checkoutBtn');
+        let cart = {};
 
-        // Sample products
-        const products = [
-            { id: 1, name: 'Laptop', price: 1200 },
-            { id: 2, name: 'Mouse', price: 25 },
-            { id: 3, name: 'Keyboard', price: 80 },
-            { id: 4, name: 'Monitor', price: 300 },
-            { id: 5, name: 'Headphones', price: 150 },
-            { id: 6, name: 'Desk', price: 200 }
-        ];
-
-        document.addEventListener('DOMContentLoaded', loadProducts);
-
-        function loadProducts() {
-            productGrid.innerHTML = '';
-            products.forEach(product => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.innerHTML = `
-                    <div class="product-name">${product.name}</div>
-                    <div class="product-price">$${product.price}</div>
-                `;
-                card.onclick = () => addToCart(product);
-                productGrid.appendChild(card);
-            });
-        }
-
-        function addToCart(product) {
-            const existingItem = cart.find(item => item.id === product.id);
-            if (existingItem) {
-                existingItem.qty++;
-            } else {
-                cart.push({ ...product, qty: 1 });
+        async function loadProducts() {
+            try {
+                const response = await fetch('php/get_products.php');
+                const data = await response.json();
+                
+                const productList = document.getElementById('productList');
+                
+                if (data.status === 'success' && data.data.length > 0) {
+                    let html = '';
+                    data.data.forEach(product => {
+                        if (product.quantity > 0) {
+                            html += `<div class="product-card" onclick="addToCart(${product.id}, '${product.name}', ${product.price})">
+                                <h4>${product.name}</h4>
+                                <div class="product-price">$${parseFloat(product.price).toFixed(2)}</div>
+                                <div class="product-stock">Stock: ${product.quantity}</div>
+                            </div>`;
+                        }
+                    });
+                    productList.innerHTML = html;
+                } else {
+                    productList.innerHTML = '<div class="empty-message"><i class="fas fa-box"></i><p>No products available</p></div>';
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
             }
-            updateCart();
         }
 
-        function removeFromCart(productId) {
-            cart = cart.filter(item => item.id !== productId);
+        function addToCart(productId, productName, price) {
+            if (cart[productId]) {
+                cart[productId].quantity++;
+            } else {
+                cart[productId] = {
+                    name: productName,
+                    price: price,
+                    quantity: 1
+                };
+            }
             updateCart();
         }
 
         function updateCart() {
-            cartItems.innerHTML = '';
-            if (cart.length === 0) {
-                cartItems.innerHTML = '<p style="color: #999; text-align: center; padding: 40px 0;">Cart is empty</p>';
-                checkoutBtn.disabled = true;
-            } else {
-                cart.forEach(item => {
-                    const itemEl = document.createElement('div');
-                    itemEl.className = 'cart-item';
-                    itemEl.innerHTML = `
-                        <div class="item-details">
-                            <div class="item-name">${item.name}</div>
-                            <div class="item-qty">Qty: ${item.qty} × $${item.price}</div>
-                        </div>
-                        <div>
-                            <div class="item-price">$${(item.price * item.qty).toFixed(2)}</div>
-                            <button class="remove-btn" onclick="window.removeFromCart(${item.id})">Remove</button>
-                        </div>
-                    `;
-                    cartItems.appendChild(itemEl);
-                });
-                checkoutBtn.disabled = false;
+            const cartItems = document.getElementById('cartItems');
+            
+            if (Object.keys(cart).length === 0) {
+                cartItems.innerHTML = '<div class="empty-message"><i class="fas fa-shopping-cart"></i><p>Cart is empty</p></div>';
+                updateSummary();
+                return;
             }
-            updateSummary();
+
+            let html = '';
+            let subtotal = 0;
+
+            Object.entries(cart).forEach(([id, item]) => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                
+                html += `<div class="cart-item">
+                    <div class="cart-item-details">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-qty">$${item.price.toFixed(2)} × <input type="number" class="qty-input" value="${item.quantity}" min="1" onchange="updateQuantity(${id}, this.value)"></div>
+                    </div>
+                    <div class="cart-item-total">$${itemTotal.toFixed(2)}</div>
+                    <button class="remove-btn" onclick="removeFromCart(${id})">Remove</button>
+                </div>`;
+            });
+
+            cartItems.innerHTML = html;
+            
+            const tax = subtotal * 0.1;
+            const total = subtotal + tax;
+            
+            document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
+            document.getElementById('tax').textContent = '$' + tax.toFixed(2);
+            document.getElementById('total').textContent = '$' + total.toFixed(2);
+        }
+
+        function updateQuantity(id, newQty) {
+            const qty = parseInt(newQty);
+            if (qty > 0) {
+                cart[id].quantity = qty;
+            } else {
+                delete cart[id];
+            }
+            updateCart();
+        }
+
+        function removeFromCart(id) {
+            delete cart[id];
+            updateCart();
         }
 
         function updateSummary() {
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            const tax = subtotal * 0.10;
-            const total = subtotal + tax;
-
-            document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
-            document.getElementById('tax').textContent = `$${tax.toFixed(2)}`;
-            document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+            document.getElementById('subtotal').textContent = '$0.00';
+            document.getElementById('tax').textContent = '$0.00';
+            document.getElementById('total').textContent = '$0.00';
         }
 
-        checkoutBtn.addEventListener('click', () => {
-            alert(`Sale completed! Total: $${document.getElementById('total').textContent}`);
-            cart = [];
-            updateCart();
-        });
+        function setPayment(method) {
+            document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('active'));
+            event.target.closest('.payment-option').classList.add('active');
+            document.getElementById('paymentMethod').value = method;
+        }
+
+        async function checkout() {
+            if (Object.keys(cart).length === 0) {
+                showWarning('Cart is empty');
+                return;
+            }
+
+            let success = true;
+            for (const [productId, item] of Object.entries(cart)) {
+                try {
+                    const response = await fetch('php/add_sale.php', {
+                        method: 'POST',
+                        body: new URLSearchParams({
+                            product_id: productId,
+                            quantity_sold: item.quantity,
+                            sale_price: item.price,
+                            total_amount: (item.price * item.quantity).toFixed(2)
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.status !== 'success') {
+                        success = false;
+                        showError(data.message);
+                    }
+                } catch (error) {
+                    success = false;
+                    console.error('Error:', error);
+                    showError('An error occurred during checkout');
+                }
+            }
+
+            if (success) {
+                showSuccess('Sales recorded successfully! Payment method: ' + document.getElementById('paymentMethod').value);
+                cart = {};
+                updateCart();
+                loadProducts();
+            }
+        }
+
+        function clearCart() {
+            if (confirm('Are you sure you want to clear the cart?')) {
+                cart = {};
+                updateCart();
+            }
+        }
+
+        function searchProducts() {
+            const searchTerm = document.getElementById('productSearch').value.toLowerCase();
+            const productCards = document.querySelectorAll('.product-card');
+            
+            productCards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(searchTerm) ? 'block' : 'none';
+            });
+        }
+
+        loadProducts();
     </script>
+    <script src="js/toast.js"></script>
 </body>
 </html>

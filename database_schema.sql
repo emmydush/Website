@@ -69,7 +69,50 @@ CREATE TABLE sales (
     sale_price DECIMAL(10, 2) NOT NULL,
     total_amount DECIMAL(10, 2) NOT NULL,
     sold_by INT,
+    sale_type ENUM('regular', 'credit') DEFAULT 'regular',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(id),
     FOREIGN KEY (sold_by) REFERENCES users(id)
+);
+
+-- Units table (for measurements)
+CREATE TABLE units (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    abbreviation VARCHAR(10) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Customers table
+CREATE TABLE customers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(20),
+    address TEXT,
+    city VARCHAR(50),
+    state VARCHAR(50),
+    postal_code VARCHAR(20),
+    country VARCHAR(50),
+    customer_type ENUM('retail', 'wholesale') DEFAULT 'retail',
+    balance DECIMAL(10, 2) DEFAULT 0.00,
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Credit sales table
+CREATE TABLE credit_sales (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    amount_paid DECIMAL(10, 2) DEFAULT 0.00,
+    balance_due DECIMAL(10, 2) NOT NULL,
+    due_date DATE,
+    status ENUM('pending', 'partial', 'paid', 'overdue') DEFAULT 'pending',
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (customer_id) REFERENCES customers(id)
 );

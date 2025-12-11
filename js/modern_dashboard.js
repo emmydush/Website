@@ -1,38 +1,6 @@
 // Modern Dashboard JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Mobile Menu Toggle
-    const sidebar = document.querySelector('.sidebar');
-    const menuToggle = document.getElementById('mobileMenuToggle');
-
-    if (menuToggle) {
-        menuToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('active');
-        });
-    }
-
-    // Close sidebar when clicking on a menu item
-    const menuItems = document.querySelectorAll('.menu-item');
-    menuItems.forEach(item => {
-        item.addEventListener('click', function() {
-            if (window.innerWidth <= 767) {
-                sidebar.classList.remove('active');
-            }
-        });
-    });
-
-    // Close sidebar when clicking outside
-    document.addEventListener('click', function(event) {
-        if (window.innerWidth <= 767) {
-            const isClickInsideSidebar = sidebar.contains(event.target);
-            const isClickInsideToggle = menuToggle && menuToggle.contains(event.target);
-
-            if (!isClickInsideSidebar && !isClickInsideToggle) {
-                sidebar.classList.remove('active');
-            }
-        }
-    });
-
     // Update current date and time
     function updateDateTime() {
         const now = new Date();
@@ -103,9 +71,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Reports': 'reports.php',
                     'Settings': 'settings.php'
                 };
-
-                // Debug: Log the navigation action
-                console.log('Navigating to: ' + menuItemText);
 
                 const targetPage = navigationMap[menuItemText];
                 if (targetPage) {
